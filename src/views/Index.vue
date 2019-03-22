@@ -4,39 +4,44 @@
       collapsible
       v-model="collapsed"
     >
-      <div class="logo" />
+      <div class="logo" style="background: rgb(0, 21, 41);">
+        <span class="title-name">GO-RADIUS</span>
+      </div>
       <a-menu theme="dark" :defaultSelectedKeys="['1']" mode="inline">
         <a-menu-item key="1">
-          <a-icon type="pie-chart" />
-          <span>Option 1</span>
+          <a @click="toUser()">
+            <a-icon type="team" />
+            <span>用户管理</span>
+          </a>
         </a-menu-item>
         <a-menu-item key="2">
-          <a-icon type="desktop" />
-          <span>Option 2</span>
+          <a @click="toProduct()">
+          <a-icon type="shopping" />
+          <span>套餐管理</span>
+          </a>
+        </a-menu-item>
+        <a-menu-item key="3">
+          <a @click="toOnline()">
+          <a-icon type="global" />
+          <span>在线用户</span>
+          </a>
         </a-menu-item>
         <a-sub-menu
           key="sub1"
         >
-          <span slot="title"><a-icon type="user" /><span>User</span></span>
-          <a-menu-item key="3">Tom</a-menu-item>
-          <a-menu-item key="4">Bill</a-menu-item>
-          <a-menu-item key="5">Alex</a-menu-item>
+          <span slot="title"><a-icon type="setting" /><span>系统设置</span></span>
+          <a-menu-item key="4"><a-icon type="user" />管理员</a-menu-item>
+          <a-menu-item key="5"><a-icon type="database" />NAS管理</a-menu-item>
+          <a-menu-item key="6"><a-icon type="appstore" />部门管理</a-menu-item>
+          <a-menu-item key="7"><a-icon type="solution" />角色管理</a-menu-item>
+          <a-menu-item key="8"><a-icon type="profile" />菜单管理</a-menu-item>
         </a-sub-menu>
-        <a-sub-menu
-          key="sub2"
-        >
-          <span slot="title"><a-icon type="team" /><span>Team</span></span>
-          <a-menu-item key="6">Team 1</a-menu-item>
-          <a-menu-item key="8">Team 2</a-menu-item>
-        </a-sub-menu>
-        <a-menu-item key="9">
-          <a-icon type="file" />
-          <span>File</span>
-        </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout>
-      <a-layout-header style="background: #aabbcc; padding: 0" />
+      <a-layout-header style="background: #3d72ab; padding: 0">
+          <div style="float:right; margin-right:30px;height:64px;">可以的啊啊啊</div>
+      </a-layout-header>
       <a-layout-content style="margin: 0 16px">
         <a-breadcrumb style="margin: 16px 0">
           <a-breadcrumb-item>User</a-breadcrumb-item>
@@ -59,6 +64,17 @@ export default {
       collapsed: false,
     }
   },
+  methods: {
+    toUser() {
+      this.$router.push('/user');
+    },
+    toProduct() {
+      this.$router.push('/product');
+    },
+    toOnline() {
+      this.$router.push('/online');
+    }
+  }
 }
 </script>
 
@@ -67,5 +83,13 @@ export default {
   height: 32px;
   background: rgba(255,255,255,.2);
   margin: 16px;
+}
+
+.title-name {
+    color: #90a0af;
+    display: block;
+    height: 32px;
+    text-align: center;
+    padding-top: 5px;
 }
 </style>
