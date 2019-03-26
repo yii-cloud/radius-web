@@ -1,3 +1,4 @@
+
 <template>
 <div class="panel-wrapper">
   <div class="panel">
@@ -17,7 +18,7 @@
                 <input type="password" name="password" id="password" placeholder="请输入密码" />
             </div>
             <div class="login">
-                <button type="button" @click="onJumpIndex()">登录</button>
+                <button type="button" @click="login()">登录</button>
             </div>
             <div class="reg">
                 <span style="font-weight: 500;color: orangered"></span>
@@ -29,17 +30,19 @@
 </template>
 
 <script>
+
 export default {
   name: 'Login',
-  data() {
-      return {
-          
+  methods: {
+      login() {
+          this.$router.push('/index')
+      },
+      test() {
+          console.log(this.CONFIG.apiUrl);
       }
   },
-  methods: {
-      onJumpIndex() {
-          this.$router.push('/index')
-      }
+  created() {
+      this.test();
   }
 }
 </script>
