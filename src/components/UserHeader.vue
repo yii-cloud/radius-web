@@ -3,7 +3,7 @@
     <a-dropdown>
       <a-button style="color:#b3712b;background-color:#d8e2ec">
         <a-icon type="user"/>
-        搞事情的
+        {{realName}}
       </a-button>
       <a-menu slot="overlay">
         <a-menu-item>
@@ -29,14 +29,16 @@ export default {
   },
   methods: {
     getUser() {
+      var sessionId = localStorage.getItem("rad_access_token");
       this.axios.post(this.CONFIG.apiUrl + "/manager/info", {}, {
           headers: {
             "rad_access_token": sessionId
           }
-        }).then(function(response) {
-
+        }).then(response => {
+            console.log(response);
+            this.realName = response.data.data.RealName;
         }).catch(function(error) { 
-
+            console.log(error);
         });
     },
     logout() {
@@ -46,10 +48,10 @@ export default {
           headers: {
             "rad_access_token": sessionId
           }
-        }).then(function(response) {
-
+        }).then(response => {
+            console.log(response);
         }).catch(function(error) { 
-
+            console.log(error)
         });
         localStorage.removeItem("rad_access_token")
         this.$router.push("/");

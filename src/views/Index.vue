@@ -12,7 +12,7 @@
           Bill is a cat.
         </div>
       </a-layout-content>
-
+      <Footer/>
     </a-layout>
   </a-layout>
 </template>

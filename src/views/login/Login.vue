@@ -49,9 +49,12 @@ export default {
             username: this.username,
             password: this.password
         }).then(response => {
-            console.log(response.data);
-            localStorage.setItem("rad_access_token", "no bbb");
-            this.$store.commit("setUser", {userName:"super", realName:"超级管理员"})
+            var resultData = response.data;
+            if(resultData.code == 1) {
+              alert(resultData.message);
+              return;
+            }
+            localStorage.setItem("rad_access_token", resultData.data);
             this.$router.push("/index");
         }).catch(function() {
             return;
