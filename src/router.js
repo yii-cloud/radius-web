@@ -13,26 +13,41 @@ export default new Router({
     {
       path: "/index",
       name: "index",
+      meta: {
+        requireAuth: true
+      },
       component: () => import("./views/Index.vue")
     },
     {
       path: "/user",
       name: "user",
+      meta: {
+        requireAuth: true
+      },
       component: () => import("./views/user/User.vue")
     },
     {
       path: "/product",
       name: "product",
+      meta: {
+        requireAuth: true
+      },
       component: () => import("./views/product/Product.vue")
     },
     {
       path: "/online",
       name: "online",
+      meta: {
+        requireAuth: true
+      },
       component: () => import("./views/online/Online.vue")
     },
     {
       path: "/system/manager",
       name: "manager",
+      meta: {
+        requireAuth: true
+      },
       component: () => import("./views/system/Manager.vue")
     }
   ]
