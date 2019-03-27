@@ -1,10 +1,9 @@
 <template>
-import { error } from 'util';
   <div id="components-dropdown-demo-placement">
     <a-dropdown>
       <a-button style="color:#b3712b;background-color:#d8e2ec">
         <a-icon type="user"/>
-        {{user.realName}}
+        搞事情的
       </a-button>
       <a-menu slot="overlay">
         <a-menu-item>
@@ -22,14 +21,14 @@ import { error } from 'util';
 export default {
   data() {
     return {
-      user: this.$store.getters.getUser
+      
     };
   },
   methods: {
     logout() {
       if (confirm("确定退出系统吗?!")) {
         var sessionId = localStorage.getItem("rad_access_token");
-        this.axios.get(this.CONFIG.apiUrl + "/logout", {
+        this.axios.post(this.CONFIG.apiUrl + "/logout", {}, {
           headers: {
             "rad_access_token": sessionId
           }
