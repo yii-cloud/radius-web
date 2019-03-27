@@ -21,10 +21,24 @@
 export default {
   data() {
     return {
-      
+       realName: ""
     };
   },
+  created() {
+     this.getUser();
+  },
   methods: {
+    getUser() {
+      this.axios.post(this.CONFIG.apiUrl + "/manager/info", {}, {
+          headers: {
+            "rad_access_token": sessionId
+          }
+        }).then(function(response) {
+
+        }).catch(function(error) { 
+
+        });
+    },
     logout() {
       if (confirm("确定退出系统吗?!")) {
         var sessionId = localStorage.getItem("rad_access_token");
