@@ -14,13 +14,13 @@ import { stringify } from 'querystring';
             <label>
               <img src="../../assets/images/user.png" width="20px" height="20px">
             </label>
-            <input v-model="username" id="username" placeholder="你的手机号或者用户名">
+            <input v-model="username" id="username" @keyup.enter="login()" placeholder="你的手机号或者用户名">
           </div>
           <div class="int">
             <label>
               <img src="../../assets/images/passwd.png" width="20px" height="20px">
             </label>
-            <input v-model="password" id="password" placeholder="请输入密码">
+            <input type="password" v-model="password" id="password" @keyup.enter="login()" placeholder="请输入密码">
           </div>
           <div class="login">
             <button type="button" @click="login()">登录</button>
@@ -45,6 +45,10 @@ export default {
   },
   methods: {
     login() {
+      if(this.username.length === 0 || this.password.length === 0) {
+        alert("please enter your username and password!");
+        return;
+      }
       this.axios.post(this.CONFIG.apiUrl + "/login", {
             username: this.username,
             password: this.password

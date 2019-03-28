@@ -35,10 +35,12 @@ export default {
             "rad_access_token": sessionId
           }
         }).then(response => {
-            console.log(response);
             this.realName = response.data.data.RealName;
-        }).catch(function(error) { 
-            console.log(error);
+        }).catch(error => { 
+            if(error.response.status === 401) {
+              localStorage.removeItem("rad_access_token")
+              this.$router.push("/");
+            }
         });
     },
     logout() {
@@ -48,10 +50,9 @@ export default {
           headers: {
             "rad_access_token": sessionId
           }
-        }).then(response => {
-            console.log(response);
-        }).catch(function(error) { 
-            console.log(error)
+        }).then(() => {
+
+        }).catch(function() { 
         });
         localStorage.removeItem("rad_access_token")
         this.$router.push("/");

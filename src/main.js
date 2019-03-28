@@ -14,7 +14,7 @@ Vue.use(Antd);
 router.beforeEach((to, from, next) => {
   // 判断是否需要登录权限
   if (to.matched.some(res => res.meta.requireAuth)) {
-    if (localStorage.getItem("rad_access_token").length === 0) {
+    if (localStorage.getItem("rad_access_token") == null) {
       next("/");
     } else {
       next();

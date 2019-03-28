@@ -1,5 +1,5 @@
 <template>
-  <a-layout-footer style="text-align: right">Ant Design ©2018 Created by Ant UED</a-layout-footer>
+  <a-layout-footer style="text-align: right">Go-Radius is a simple manager Server by go-rad</go-rad></a-layout-footer>
 </template>
 
 <script>
