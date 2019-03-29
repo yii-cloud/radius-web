@@ -13,11 +13,15 @@
             :columns="columns"
             :dataSource="data"
             :pagination="pagination"
-            :scroll="{ x: 1300, y: 800 }"
+            :scroll="{ x: 1300}"
             :rowKey="record => record.Id"
             @change="handleTableChange"
           >
-            <a slot="action" slot-scope href="javascript:;">Action</a>
+            <span slot="action" slot-scope="text" class="table-operation">
+                <span><a :href="text.Id"><a-icon type="edit" /> 修改</a></span>
+                <a-divider type="vertical" />
+                <span><a style="color:#da6868" :href="text.Id"><a-icon type="delete" /> 删除</a></span>
+            </span>
           </a-table>
         </div>
       </a-layout-content>
@@ -31,14 +35,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const columns = [
-  {
-    title: "姓名",
-    width: 150,
-    dataIndex: "RealName",
-    key: "RealName",
-    fixed: "left"
-  },
-  { title: "创建时间", width: 500, dataIndex: "CreateTime", key: "CreateTime", fixed: "left" }
+  {title: "姓名",dataIndex: "RealName",key: "RealName"},
+  {title: "创建时间", dataIndex: "CreateTime", key: "CreateTime"},
+  {title: '操作',key: 'add',fixed: 'right',  width: 150, scopedSlots: { customRender: 'action' }},
 ];
 
 export default {
@@ -56,18 +55,20 @@ export default {
     };
   },
   methods: {
+    test(text) {
+        console.log(text);
+    },
+    // 分页
     handleTableChange (pagination) {
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
-      console.log(this.pagination);
       this.fetchManager({
         pageSize: pagination.pageSize,
         page: pagination.current,
       });
     },
     fetchManager (params = {}) {
-      console.log('params:', params);
       this.loading = true
       this.axios.post(this.CONFIG.apiUrl + "/manager/list", params,
         {
