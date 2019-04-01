@@ -6,7 +6,7 @@
       <div class="logo" style="background: rgb(0, 21, 41);">
         <span class="title-name">GO-RADIUS</span>
       </div>
-      <a-menu theme="dark" :defaultSelectedKeys="['1']" mode="inline">
+      <a-menu theme="dark" mode="inline" :selectedKeys="selectedKeys" :openKeys.sync="openSub">
         <a-menu-item key="1">
           <a @click="toUser()">
             <a-icon type="team" />
@@ -29,7 +29,11 @@
           key="sub1"
         >
           <span slot="title"><a-icon type="setting" /><span>系统设置</span></span>
-          <a-menu-item key="4"><a-icon type="user" />管理员</a-menu-item>
+          <a-menu-item key="4">
+            <a @click="toManager()">
+            <a-icon type="user" />管理员
+            </a>
+          </a-menu-item>
           <a-menu-item key="5"><a-icon type="database" />NAS管理</a-menu-item>
           <a-menu-item key="6"><a-icon type="appstore" />部门管理</a-menu-item>
           <a-menu-item key="7"><a-icon type="solution" />角色管理</a-menu-item>
@@ -42,6 +46,7 @@
 <script>
 export default {
     name: 'Menu',
+    props: ["selectedKeys", "openSub"],
     data() {
     return {
       collapsed: false,
@@ -56,6 +61,9 @@ export default {
     },
     toOnline() {
       this.$router.push('/online');
+    },
+    toManager() {
+      this.$router.push('/system/manager');
     }
   }
 }

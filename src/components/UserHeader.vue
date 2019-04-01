@@ -30,12 +30,12 @@ export default {
   methods: {
     getUser() {
       var sessionId = localStorage.getItem("rad_access_token");
-      this.axios.post(this.CONFIG.apiUrl + "/manager/info", {}, {
+      this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {}, {
           headers: {
             "rad_access_token": sessionId
           }
         }).then(response => {
-            this.realName = response.data.data.RealName;
+            this.realName = response.data.data.realName;
         }).catch(error => { 
             if(error.response.status === 401) {
               localStorage.removeItem("rad_access_token")

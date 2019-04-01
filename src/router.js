@@ -4,8 +4,7 @@ import Router from "vue-router";
 Vue.use(Router);
 
 export default new Router({
-  routes: [
-    {
+  routes: [{
       path: "/",
       name: "login",
       component: () => import("./views/login/Login.vue")
@@ -45,9 +44,6 @@ export default new Router({
     {
       path: "/system/manager",
       name: "manager",
-      meta: {
-        requireAuth: true
-      },
       component: () => import("./views/system/Manager.vue")
     }
   ]
