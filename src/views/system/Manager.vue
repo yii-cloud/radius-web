@@ -11,7 +11,7 @@
             <a-button type="primary" @click="show()">
               <a-icon type="plus"/>添加管理员信息
             </a-button>
-            <a-modal title="添加管理员" :maskClosable="false" v-model="visible" :footer="null">
+            <a-modal :title="isUpdate ? '修改管理员信息' : '增加管理员'" :maskClosable="false" v-model="visible" :footer="null">
               <template>
                 <a-form :form="form" @submit="handleSubmit">
                   <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -32,10 +32,12 @@
                   <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
                     <a-input
                       type="password"
+                      
                       v-decorator="[
                                     'password',
-                                    {rules: [{ required: true, message: '请输入密码!' }]}
+                                    {rules: [{ required: !isUpdate, message: '请输入密码!' }]}
                                     ]"
+                      
                     />
                   </a-form-item>
                   <a-form-item label="选择部门" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -154,24 +156,29 @@ export default {
       managerStates,
       formLayout: "horizontal",
       form: this.$form.createForm(this),
-      departments: []
+      departments: [],
+      id: null,
+      isUpdate: false,
     };
   },
   methods: {
     show() {
       this.visible = true;
+      this.isUpdate = false;
       this.form.resetFields();
     },
     modifyManager(id) {
+      this.isUpdate = true;
       this.axios.post(
           this.CONFIG.apiUrl + "/manager/info",
           { id: id }
         ).then(response => {
           this.visible = true;
           var data = response.data.data;
+          this.id = data.id;
           this.$nextTick(() => {
             this.form.setFieldsValue(lodash.pick(data, Object.keys(this.form.getFieldsValue())));
-          })
+          });
         }).catch(() => {
           alert("修改管理员失败");
         });
@@ -216,23 +223,20 @@ export default {
         });
     },
     // 修改管理员信息
-    handleUpdate(e) {
-      e.preventDefault();
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log("Received values of form: ", values);
-        }
-      });
+    handleUpdate(values) {
+        values["id"] = this.id;
+        console.log("Received values of form: ", values);
+        this.id = null;
     },
     getDepartments() {
       // 获取部门列表
       this.axios
         .post(
-          this.CONFIG.apiUrl + "/department/list",
+          this.CONFIG.apiUrl + "/fetch/department",
           {}
         )
         .then(response => {
-          this.departments = response.data.data.data;
+          this.departments = response.data.data;
         });
     },
 
@@ -241,21 +245,31 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
-          console.log("Received values of form: ", values);
+          if(this.isUpdate) {
+            this.handleUpdate(values);
+            return;
+          }
           this.axios
             .post(this.CONFIG.apiUrl + "/manager/add", values)
             .then(response => {
               alert(response.data.message);
+              this.visible = false;
             })
             .catch(error => {
-              alert("添加管理员失败: " + error.response.data.message);
+              alert("添加管理员失败");
             });
         }
       });
+    },
+    handleConfirmPassword(rule, value, callback) {
+        console.log(value);
+        // Note: 必须总是返回一个 callback，否则 validateFieldsAndScroll 无法响应
+        callback()
     }
   },
   mounted() {
     this.fetchManager({ page: { current: 1, pageSize: 20 } });
+    this.getDepartments();
   }
 };
 </script>
