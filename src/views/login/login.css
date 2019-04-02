@@ -1,7 +1,7 @@
 /*面板*/
 .panel-wrapper {
     display: flex; justify-content: center; align-content: center;
-    height: 100%; position: relative;
+    height: 100%;
     background-color: rgba(105, 85, 56, 0.38);
 }
 

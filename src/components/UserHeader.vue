@@ -30,30 +30,18 @@ export default {
   methods: {
     getUser() {
       var sessionId = localStorage.getItem("rad_access_token");
-      this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {}, {
-          headers: {
-            "rad_access_token": sessionId
-          }
-        }).then(response => {
+      this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {
+
+      }).then(response => {
             this.realName = response.data.data.realName;
-        }).catch(error => { 
-            if(error.response.status === 401) {
-              localStorage.removeItem("rad_access_token")
-              this.$router.push("/");
-            }
+        }).catch(() => { 
+            
         });
     },
     logout() {
       if (confirm("确定退出系统吗?!")) {
         var sessionId = localStorage.getItem("rad_access_token");
-        this.axios.post(this.CONFIG.apiUrl + "/logout", {}, {
-          headers: {
-            "rad_access_token": sessionId
-          }
-        }).then(() => {
-
-        }).catch(function() { 
-        });
+        this.axios.post(this.CONFIG.apiUrl + "/logout", {});
         localStorage.removeItem("rad_access_token")
         this.$router.push("/");
       }

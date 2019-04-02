@@ -6,21 +6,21 @@
       <div class="logo" style="background: rgb(0, 21, 41);">
         <span class="title-name">GO-RADIUS</span>
       </div>
-      <a-menu theme="dark" mode="inline" :selectedKeys="selectedKeys" :openKeys.sync="openSub">
+      <a-menu theme="dark" mode="inline">
         <a-menu-item key="1">
-          <a @click="toUser()">
+          <a @click="$router.push('/user')">
             <a-icon type="team" />
             <span>用户管理</span>
           </a>
         </a-menu-item>
         <a-menu-item key="2">
-          <a @click="toProduct()">
+          <a @click="$router.push('/product')">
           <a-icon type="shopping" />
           <span>套餐管理</span>
           </a>
         </a-menu-item>
         <a-menu-item key="3">
-          <a @click="toOnline()">
+          <a @click="$router.push('/online')">
           <a-icon type="global" />
           <span>在线用户</span>
           </a>
@@ -30,7 +30,7 @@
         >
           <span slot="title"><a-icon type="setting" /><span>系统设置</span></span>
           <a-menu-item key="4">
-            <a @click="toManager()">
+            <a @click="$router.push('/system/manager')">
             <a-icon type="user" />管理员
             </a>
           </a-menu-item>
@@ -46,25 +46,12 @@
 <script>
 export default {
     name: 'Menu',
-    props: ["selectedKeys", "openSub"],
     data() {
     return {
       collapsed: false,
     }
   },
   methods: {
-    toUser() {
-      this.$router.push('/user');
-    },
-    toProduct() {
-      this.$router.push('/product');
-    },
-    toOnline() {
-      this.$router.push('/online');
-    },
-    toManager() {
-      this.$router.push('/system/manager');
-    }
   }
 }
 </script>
