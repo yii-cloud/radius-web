@@ -15,7 +15,7 @@
               <template>
                 <a-form :form="form" @submit="handleSubmit">
                   <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
+                    <a-input :disabled = isUpdate
                       v-decorator="[
                                     'username',
                                     {rules: [{ required: true, message: '请输入用户名!' }]}
@@ -92,7 +92,6 @@
         :pagination="pagination"
         :scroll="{ x: 1300}"
         :rowKey="record => record.id"
-        @change="handleTableChange"
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
@@ -157,8 +156,9 @@ export default {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       departments: [],
-      id: null,
+      id: 0,
       isUpdate: false,
+      searchParams: {},
     };
   },
   methods: {
@@ -191,26 +191,29 @@ export default {
             { id: id })
           .then(response => {
             alert(response.data.message);
+            this.fetchManager({ page: { current: 1, pageSize: 20 }, ...this.searchParams });
           })
           .catch(error => {
             alert("删除管理员失败: " + error.response.data.message);
           });
       }
     },
-    // 分页
-    handleTableChange(pagination) {
+    // 条件查询
+    searchManagerByParams(pagination) {
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
       this.fetchManager({
         page: {
           pageSize: pagination.pageSize,
-          page: pagination.current
+          page: pagination.current,
+          ...this.searchParams
         }
       });
     },
     fetchManager(params = {}) {
       this.loading = true;
+      params = {...params, ...this.searchParams}
       this.axios
         .post(this.CONFIG.apiUrl + "/manager/list", params)
         .then(response => {
@@ -226,7 +229,16 @@ export default {
     handleUpdate(values) {
         values["id"] = this.id;
         console.log("Received values of form: ", values);
-        this.id = null;
+        this.axios
+        .post(
+          this.CONFIG.apiUrl + "/manager/update",
+          values
+        )
+        .then(response => {
+           alert(response.data.message);
+           this.fetchManager({ page: { current: 1, pageSize: 20 }, ...this.searchParams });
+        });
+        this.id = 0;
     },
     getDepartments() {
       // 获取部门列表
@@ -247,6 +259,7 @@ export default {
         if (!err) {
           if(this.isUpdate) {
             this.handleUpdate(values);
+            this.visible = false;
             return;
           }
           this.axios
@@ -254,12 +267,14 @@ export default {
             .then(response => {
               alert(response.data.message);
               this.visible = false;
+              this.fetchManager({ page: { current: 1, pageSize: 20 }, ...this.searchParams });
             })
-            .catch(error => {
+            .catch(() => {
               alert("添加管理员失败");
             });
         }
       });
+      
     },
     handleConfirmPassword(rule, value, callback) {
         console.log(value);
