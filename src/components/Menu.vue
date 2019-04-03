@@ -2,6 +2,7 @@
     <a-layout-sider
       collapsible
       v-model="collapsed"
+      :style="{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0 }"
     >
       <div class="logo" style="background: rgb(0, 21, 41);">
         <span class="title-name">{{systemName}}</span>

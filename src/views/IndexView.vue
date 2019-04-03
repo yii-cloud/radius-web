@@ -1,5 +1,5 @@
 <template>
-  <a-layout id="components-layout-demo-side" style="height: 100%">
+  <a-layout id="components-layout-demo-side" :style="{ marginLeft: '200px' }">
     <Menu />
     <a-layout>
       <Header/>

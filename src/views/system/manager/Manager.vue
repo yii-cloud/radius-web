@@ -108,6 +108,7 @@
         :pagination="pagination"
         :scroll="{ x: 1300}"
         :rowKey="record => record.id"
+        @change="searchManagerByParams"
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
@@ -171,7 +172,7 @@ export default {
     return {
       data: [],
       visible: false,
-      pagination: {},
+      pagination: {showTotal: this.showTotal},
       loading: false,
       columns,
       managerStates,
@@ -185,6 +186,9 @@ export default {
     };
   },
   methods: {
+    showTotal(total) {
+        return "总共" + total + "条数据";
+    },
     show() {
       this.visible = true;
       this.isUpdate = false;
