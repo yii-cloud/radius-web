@@ -22,6 +22,22 @@
                                     ]"
                     />
                   </a-form-item>
+                  <a-form-item v-if="isUpdate" label="状态" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-select
+                      v-decorator="[
+                                    'status',
+                                    {rules: [{ required: true, message: '请选择状态!' }]}
+                                    ]"
+                      placeholder="请选择状态"
+                    >
+                    <a-select-option
+                        v-for="item in managerStatusList"
+                        :key="item.key"
+                        :value="item.key"
+                        :disabled = "isUpdate && item.key == 3"
+                      >{{item.value}}</a-select-option>
+                    </a-select>
+                  </a-form-item>
                   <a-form-item label="真实姓名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
                     <a-input
                       v-decorator="[
@@ -114,10 +130,16 @@
 
 import lodash from "lodash"
 
+const managerStatusList = [
+  {key: 1, value: "正常"},
+  {key: 2, value: "禁用"},
+  {key: 3, value: "已删除"}
+];
+
 const managerStates = {
-  0: "禁用",
   1: "正常",
-  2: "已删除"
+  2: "禁用",
+  3: "已删除"
 };
 
 const columns = [
@@ -153,6 +175,7 @@ export default {
       loading: false,
       columns,
       managerStates,
+      managerStatusList,
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       departments: [],

@@ -24,12 +24,6 @@ export default {
 </script>
 
 <style>
-#components-layout-demo-side .logo {
-  height: 32px;
-  background: rgba(255,255,255,.2);
-  margin: 16px;
-}
-
 .title-name {
     color: #90a0af;
     display: block;

@@ -48,7 +48,43 @@ export default new Router({
             requireAuth: true,
             parent: "system"
           },
-          component: () => import("./views/system/Manager.vue")
+          component: () => import("./views/system/manager/Manager.vue")
+        },
+        {
+          path: "/system/nas",
+          name: "nas",
+          meta: {
+            requireAuth: true,
+            parent: "system"
+          },
+          component: () => import("./views/system/nas/Nas.vue")
+        },
+        {
+          path: "/system/resource",
+          name: "resource",
+          meta: {
+            requireAuth: true,
+            parent: "system"
+          },
+          component: () => import("./views/system/res/Resource.vue")
+        },
+        {
+          path: "/system/role",
+          name: "role",
+          meta: {
+            requireAuth: true,
+            parent: "system"
+          },
+          component: () => import("./views/system/role/Role.vue")
+        },
+        {
+          path: "/system/department",
+          name: "department",
+          meta: {
+            requireAuth: true,
+            parent: "system"
+          },
+          component: () => import("./views/system/department/Department.vue")
         }
       ]
     }

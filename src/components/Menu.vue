@@ -4,7 +4,7 @@
       v-model="collapsed"
     >
       <div class="logo" style="background: rgb(0, 21, 41);">
-        <span class="title-name">GO-RADIUS</span>
+        <span class="title-name">{{systemName}}</span>
       </div>
       <a-menu theme="dark" mode="inline" :openKeys.sync="subKeys" :defaultSelectedKeys="itemKeys" @click="doChange">
         <a-menu-item key="user">
@@ -34,10 +34,26 @@
             <a-icon type="user" />管理员
             </a>
           </a-menu-item>
-          <a-menu-item key="nas"><a-icon type="database" />NAS管理</a-menu-item>
-          <a-menu-item key="department"><a-icon type="appstore" />部门管理</a-menu-item>
-          <a-menu-item key="role"><a-icon type="solution" />角色管理</a-menu-item>
-          <a-menu-item key="menu"><a-icon type="profile" />菜单管理</a-menu-item>
+          <a-menu-item key="nas">
+            <a @click="$router.push('/system/nas')">
+            <a-icon type="database" />NAS管理
+            </a>
+          </a-menu-item>
+          <a-menu-item key="department">
+            <a @click="$router.push('/system/department')">
+            <a-icon type="appstore" />部门管理
+            </a>
+          </a-menu-item>
+          <a-menu-item key="role">
+            <a @click="$router.push('/system/role')">
+            <a-icon type="solution" />角色管理
+            </a>
+          </a-menu-item>
+          <a-menu-item key="menu">
+            <a @click="$router.push('/system/resource')">
+            <a-icon type="profile" />菜单管理
+            </a>
+          </a-menu-item>
         </a-sub-menu>
       </a-menu>
     </a-layout-sider>
@@ -50,7 +66,16 @@ export default {
     return {
       collapsed: false,
       itemKeys: [],
-      subKeys: []
+      subKeys: [],
+      systemName: "Radius管理系统"
+    }
+  },
+  watch: {
+    collapsed(value) {
+      if(value)
+        this.systemName = "RADIUS";
+      else
+        this.systemName = "Radius管理系统"
     }
   },
   methods: {
