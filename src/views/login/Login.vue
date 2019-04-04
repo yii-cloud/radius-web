@@ -5,10 +5,9 @@ import { stringify } from 'querystring';
     <div class="panel">
       <!--面板的头部-->
       <div class="panel-top">
-        <h2>登陆页面</h2>
+        <h2>Radius管理系统</h2>
       </div>
       <form id="theForm" action="/login" method="post">
-        <!--面板的主要内容-->
         <div class="panel-content">
           <div class="int">
             <label>
