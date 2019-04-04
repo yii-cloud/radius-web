@@ -11,12 +11,20 @@ export default new Router({
     },
     {
       path: "/index",
-      name: "index",
+      name: "indexView",
       meta: {
         requireAuth: true
       },
       component: () => import("./views/IndexView.vue"),
       children: [
+        {
+          path: "",
+          name: "index",
+          meta: {
+            requireAuth: true
+          },
+          component: () => import("./views/Index.vue")
+        },
         {
           path: "/user",
           name: "user",

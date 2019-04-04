@@ -1,5 +1,5 @@
 <template>
-    <a-layout-content style="margin: 0 16px">
+    <a-layout-content style="margin: 0 16px;">
       <a-breadcrumb style="margin: 16px 0">
         <a-breadcrumb-item>用户管理</a-breadcrumb-item>
         <a-breadcrumb-item>用户列表</a-breadcrumb-item>
@@ -111,26 +111,28 @@
 </template>
 <script>
 const managerStates = {
-  0: "禁用",
   1: "正常",
-  2: "已删除"
+  2: "停机",
+  3: "销户",
+  4: "禁用",
 };
 
 const columns = [
-  { title: "姓名", dataIndex: "realName", key: "realName" },
-  { title: "用户名", dataIndex: "username", key: "username" },
+  { title: "姓名", dataIndex: "radUser.realName", key: "realName" },
+  { title: "用户名", dataIndex: "radUser.username", key: "username" },
+  { title: "套餐", dataIndex: "radProduct.name", key: "product" },
   {
     title: "状态",
-    dataIndex: "status",
+    dataIndex: "radUser.status",
     key: "status",
     customRender: text => {
       return managerStates[text];
     }
   },
-  { title: "手机号码", dataIndex: "mobile", key: "mobile" },
-  { title: "电子邮件", dataIndex: "email", key: "email" },
-  { title: "创建时间", dataIndex: "createTime", key: "createTime" },
-  { title: "描述", dataIndex: "description", key: "description" },
+  { title: "手机号码", dataIndex: "radUser.mobile", key: "mobile" },
+  { title: "电子邮件", dataIndex: "radUser.email", key: "email" },
+  { title: "创建时间", dataIndex: "radUser.createTime", key: "createTime" },
+  { title: "描述", dataIndex: "radUser.description", key: "description" },
   {
     title: "操作",
     key: "add",
@@ -200,21 +202,17 @@ export default {
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
-      this.fetchManager({
+      this.fetchUsers({
         page: {
           pageSize: pagination.pageSize,
           page: pagination.current
         }
       });
     },
-    fetchManager(params = {}) {
+    fetchUsers(params = {}) {
       this.loading = true;
       this.axios
-        .post(this.CONFIG.apiUrl + "/manager/list", params, {
-          headers: {
-            rad_access_token: localStorage.getItem("rad_access_token")
-          }
-        })
+        .post(this.CONFIG.apiUrl + "/user/list", params)
         .then(response => {
           const pagination = { ...this.pagination };
           pagination.total = response.data.data.totalCount;
@@ -276,7 +274,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchManager({ page: { current: 1, pageSize: 20 } });
+    this.fetchUsers({ page: { current: 1, pageSize: 20 } });
   }
 };
 </script>

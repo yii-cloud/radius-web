@@ -5,7 +5,7 @@
       :style="{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0 }"
     >
       <div class="logo" style="background: rgb(0, 21, 41);">
-        <span class="title-name">{{systemName}}</span>
+        <span class="title-name" @click="$router.push('/index')">{{systemName}}</span>
       </div>
       <a-menu theme="dark" mode="inline" :openKeys.sync="subKeys" :defaultSelectedKeys="itemKeys" @click="doChange">
         <a-menu-item key="user">
@@ -94,3 +94,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.title-name {
+    color: #90a0af;
+    height: 50px;
+    display: block;
+    text-align: center;
+    padding-top: 15px;
+}
+</style>

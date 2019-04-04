@@ -1,10 +1,10 @@
 <template>
-  <a-layout-content style="margin: 0 16px">
+  <a-layout-content style="margin: 0 16px;">
     <a-breadcrumb style="margin: 16px 0">
       <a-breadcrumb-item>管理员管理</a-breadcrumb-item>
       <a-breadcrumb-item>管理员列表</a-breadcrumb-item>
     </a-breadcrumb>
-    <div :style="{ padding: '24px', background: '#fff', minHeight: '360px'}">
+    <div :style="{ padding: '24px', background: '#fff', minHeight: '360px', marginBottom:'69px'}">
       <div style="margin-bottom: 10px">
         <template>
           <a-form class="ant-advanced-search-form" :form="search">
@@ -255,7 +255,7 @@ export default {
         this.fetchManager({ page: { current: 1, pageSize: 20}, ...values  });
       });
     },
-    resetSearch(e) {
+    resetSearch() {
       this.search.resetFields();
       this.fetchManager({ page: { current: 1, pageSize: 10 } });
     },
@@ -434,4 +434,11 @@ export default {
 .float-right {
   float: right;
 }
+
+.content-dev {
+  padding: "24px";
+  background: white;
+  min-height: calc(100vh - 139px)
+}
+
 </style>
