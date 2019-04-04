@@ -89,7 +89,7 @@
           :dataSource="data"
           :pagination="pagination"
           :scroll="{ x: 1300}"
-          :rowKey="record => record.id"
+          :rowKey="record => record.radUser.id"
           @change="handleTableChange"
         >
           <span slot="action" slot-scope="record" class="table-operation">
