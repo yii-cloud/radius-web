@@ -23,7 +23,7 @@
                 <a-form-item :label="'姓名'">
                   <a-input
                     v-decorator="[
-                'username1'
+                'realName'
               ]"
                     placeholder="姓名模糊搜索"
                   />
@@ -191,6 +191,8 @@
 <script>
 import lodash from "lodash";
 
+const pageInit = { current: 1, pageSize: 10 };
+
 const managerStatusList = [
   { key: 1, value: "正常" },
   { key: 2, value: "禁用" },
@@ -255,6 +257,7 @@ export default {
     },
     resetSearch(e) {
       this.search.resetFields();
+      this.fetchManager({ page: { current: 1, pageSize: 10 } });
     },
     showTotal(total) {
       return "总共" + total + "条数据";
@@ -289,7 +292,7 @@ export default {
           .then(response => {
             alert(response.data.message);
             this.fetchManager({
-              page: { current: 1, pageSize: 20 },
+              page: pageInit,
               ...this.searchParams
             });
           })
@@ -336,7 +339,7 @@ export default {
         .then(response => {
           alert(response.data.message);
           this.fetchManager({
-            page: { current: 1, pageSize: 20 },
+            page: { current: 1, pageSize: 10 },
             ...this.searchParams
           });
         });
@@ -367,7 +370,7 @@ export default {
               alert(response.data.message);
               this.visible = false;
               this.fetchManager({
-                page: { current: 1, pageSize: 20 },
+                page: { current: 1, pageSize: 10 },
                 ...this.searchParams
               });
             })
@@ -376,15 +379,10 @@ export default {
             });
         }
       });
-    },
-    handleConfirmPassword(rule, value, callback) {
-      console.log(value);
-      // Note: 必须总是返回一个 callback，否则 validateFieldsAndScroll 无法响应
-      callback();
     }
   },
   mounted() {
-    this.fetchManager({ page: { current: 1, pageSize: 20 } });
+    this.fetchManager({ page: { current: 1, pageSize: 10 } });
     this.getDepartments();
   }
 };
