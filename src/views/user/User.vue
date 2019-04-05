@@ -1,215 +1,364 @@
 <template>
-    <a-layout-content style="margin: 0 16px;">
-      <a-breadcrumb style="margin: 16px 0">
-        <a-breadcrumb-item>用户管理</a-breadcrumb-item>
-        <a-breadcrumb-item>用户列表</a-breadcrumb-item>
-      </a-breadcrumb>
-      <div :style="{ padding: '24px', background: '#fff', minHeight: '360px'}">
-        <div style="height:39px">
-          <template>
-            <div>
-              <a-button type="primary" @click="showModal">
-                <a-icon type="plus"/>添加用户
-              </a-button>
-              <a-modal title="添加用户" :maskClosable="false" v-model="visible" :footer="null">
-                <template>
-                  <a-form :form="form" @submit="handleSubmit">
-                    <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-input
-                        v-decorator="[
+  <a-layout-content style="margin: 0 16px;">
+    <a-breadcrumb style="margin: 16px 0">
+      <a-breadcrumb-item>用户管理</a-breadcrumb-item>
+      <a-breadcrumb-item>用户列表</a-breadcrumb-item>
+    </a-breadcrumb>
+    <div :style="{ padding: '24px', background: '#fff', minHeight: '360px', marginBottom:'69px'}">
+      <div style="margin-bottom: 10px">
+        <template>
+          <a-form class="ant-advanced-search-form" :form="search">
+            <a-row :gutter="24">
+              <a-col :span="6" :style="{ display:'block'}">
+                <a-form-item :label="'用户名'">
+                  <a-input
+                    v-decorator="[
+                'username'
+              ]"
+                    placeholder="用户名模糊搜索"
+                  />
+                </a-form-item>
+              </a-col>
+              <a-col :span="6" :style="{ display:'block'}">
+                <a-form-item :label="'姓名'">
+                  <a-input
+                    v-decorator="[
+                'realName'
+              ]"
+                    placeholder="姓名模糊搜索"
+                  />
+                </a-form-item>
+              </a-col>
+              <a-col :span="6" :style="{ display:'block'}">
+                <a-form-item :label="'状态'">
+                  <a-select
+                    v-decorator="[
+                                    'status',
+                                    ]"
+                    placeholder="请选择状态"
+                  >
+                    <a-select-option
+                      v-for="item in userStateList"
+                      :key="item.key"
+                      :value="item.key"
+                    >{{item.value}}</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+              <a-col :span="6" :style="{ textAlign: 'left' }">
+                <a-button type="primary" icon="search" @click="searchUserFunc">搜 索</a-button>
+                <a-button
+                  :style="{ marginLeft: '8px', backgroundColor:'#ffca7e', color:'white' }"
+                  icon="reload"
+                  @click="resetSearch"
+                >重 置</a-button>
+              </a-col>
+            </a-row>
+          </a-form>
+        </template>
+      </div>
+      <div style="height:39px">
+        <template>
+          <div>
+            <a-button type="primary" @click="show()">
+              <a-icon type="plus"/>添加用户信息
+            </a-button>
+            <a-modal
+              :title="isUpdate ? '修改用户信息' : '增加用户'"
+              :maskClosable="false"
+              v-model="visible"
+              :footer="null"
+            >
+              <template>
+                <a-form :form="form" @submit="handleSubmit">
+                  <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-input
+                      :disabled="isUpdate"
+                      v-decorator="[
                                     'username',
                                     {rules: [{ required: true, message: '请输入用户名!' }]}
                                     ]"
-                      />
-                    </a-form-item>
-                    <a-form-item label="真实姓名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-input
-                        v-decorator="[
+                    />
+                  </a-form-item>
+                  <a-form-item
+                    v-if="isUpdate"
+                    label="状态"
+                    :label-col="{ span: 5 }"
+                    :wrapper-col="{ span: 12 }"
+                  >
+                    <a-select
+                      v-decorator="[
+                                    'status',
+                                    {rules: [{ required: true, message: '请选择状态!' }]}
+                                    ]"
+                      placeholder="请选择状态"
+                    >
+                      <a-select-option
+                        v-for="item in userStateList"
+                        :key="item.key"
+                        :value="item.key"
+                        :disabled="isUpdate && item.key == 3"
+                      >{{item.value}}</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                  <a-form-item label="真实姓名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-input
+                      v-decorator="[
                                     'realName'
                                     ]"
-                      />
-                    </a-form-item>
-                    <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-input
-                        type="password"
-                        v-decorator="[
+                    />
+                  </a-form-item>
+                  <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-input
+                      type="password"
+                      v-decorator="[
                                     'password',
-                                    {rules: [{ required: true, message: '请输入密码!' }]}
+                                    {rules: [{ required: !isUpdate, message: '请输入密码!' }]}
                                     ]"
-                      />
-                    </a-form-item>
-                    <a-form-item label="选择部门" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-select
-                        v-decorator="[
+                    />
+                  </a-form-item>
+                  <a-form-item label="选择部门" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-select
+                      v-decorator="[
                                     'departmentId',
                                     {rules: [{ required: true, message: '请选择部门!' }]}
                                     ]"
-                        placeholder="请选择部门"
-                      >
-                        <a-select-option
-                          v-for="item in departments"
-                          :key="item.id"
-                          :value="item.id"
-                        >{{item.name}}</a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <a-form-item label="联系方式" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-input
-                        v-decorator="[
+                      placeholder="请选择部门"
+                    >
+                      <a-select-option
+                        v-for="item in departments"
+                        :key="item.id"
+                        :value="item.id"
+                      >{{item.name}}</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                  <a-form-item label="联系方式" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-input
+                      v-decorator="[
                                     'mobile'
                                     ]"
-                      />
-                    </a-form-item>
-                    <a-form-item label="电子邮件" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-input
-                        v-decorator="[
+                    />
+                  </a-form-item>
+                  <a-form-item label="电子邮件" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-input
+                      v-decorator="[
                                     'email'
                                     ]"
-                      />
-                    </a-form-item>
-                    <a-form-item label="描述信息" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                      <a-textarea
-                        v-decorator="[
+                    />
+                  </a-form-item>
+                  <a-form-item label="描述信息" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+                    <a-textarea
+                      v-decorator="[
                                     'description'
                                     ]"
-                        :rows="3"
-                      />
-                    </a-form-item>
-                    <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
-                      <a-button type="primary" html-type="submit">提交</a-button>
-                    </a-form-item>
-                  </a-form>
-                </template>
-              </a-modal>
-            </div>
-          </template>
-        </div>
-        <a-table
-          :columns="columns"
-          :dataSource="data"
-          :pagination="pagination"
-          :scroll="{ x: 1300}"
-          :rowKey="record => record.radUser.id"
-          @change="handleTableChange"
-        >
-          <span slot="action" slot-scope="record" class="table-operation">
-            <span>
-              <a @click="modifyManager(record.id)">
-                <a-icon type="edit"/>修改
-              </a>
-            </span>
-            <a-divider type="vertical"/>
-            <span>
-              <a style="color:#da6868" @click="deleteManager(record.id)">
-                <a-icon type="delete"/>删除
-              </a>
-            </span>
-          </span>
-        </a-table>
+                      :rows="3"
+                    />
+                  </a-form-item>
+                  <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
+                    <a-button type="primary" html-type="submit">提交</a-button>
+                  </a-form-item>
+                </a-form>
+              </template>
+            </a-modal>
+          </div>
+        </template>
       </div>
-    </a-layout-content>
+      <template>
+        <div>
+          <a-drawer
+            title="用户详情"
+            :placement="placement"
+            :closable="false"
+            :width="600"
+            @close="onDrawerClose"
+            :visible="drawerVisible"
+          >
+          <UserInfo :userInfo="userInfo" />    
+          </a-drawer>
+        </div>
+      </template>
+      <a-table
+        :columns="columns"
+        :dataSource="data"
+        :pagination="pagination"
+        :scroll="{ x: 1300}"
+        :rowKey="record => record.radUser.id"
+        @change="searchUserByParams"
+      >
+        <template slot="username" slot-scope="record">
+          <a href="javascript:;" @click="showDrawer(record)">{{record.radUser.username}}</a>
+        </template>
+        <span slot="action" slot-scope="record" class="table-operation">
+          <span>
+            <a @click="modifyUser(record.id)">
+              <a-icon type="edit"/> 修改
+            </a>
+          </span>
+          <a-divider type="vertical"/>
+          <span>
+            <a style="color:#da6868" @click="deleteUser(record.id)">
+              <a-icon type="delete"/> 删除
+            </a>
+          </span>
+        </span>
+      </a-table>
+    </div>
+  </a-layout-content>
 </template>
 <script>
-const managerStates = {
+import lodash from "lodash";
+const pageInit = { page: 1, pageSize: 10 };
+const userStateList = [
+  { key: 1, value: "正常" },
+  { key: 2, value: "停机" },
+  { key: 3, value: "销户" },
+  { key: 4, value: "禁用" }
+];
+
+const userStates = {
   1: "正常",
   2: "停机",
   3: "销户",
   4: "禁用",
 };
 
+const productTypes = {
+  1: "包月",
+  2: "自由时长",
+  3: "流量"
+}
+
 const columns = [
   { title: "姓名", dataIndex: "radUser.realName", key: "realName" },
-  { title: "用户名", dataIndex: "radUser.username", key: "username" },
-  { title: "套餐", dataIndex: "radProduct.name", key: "product" },
+  { title: "用户名", key: "username" ,
+    scopedSlots: { customRender: 'username' }
+  },
+  { title: "套餐", dataIndex: "radProduct.name", key: "productName",
+    customRender: (text,record) => {
+      return text + "(" + productTypes[record.radProduct.type] +")";
+    }
+  },
   {
     title: "状态",
     dataIndex: "radUser.status",
     key: "status",
     customRender: text => {
-      return managerStates[text];
+      return userStates[text];
     }
   },
   { title: "手机号码", dataIndex: "radUser.mobile", key: "mobile" },
+  { title: "套餐剩余时长", dataIndex: "radUser.availableTime", key: "availableTime" },
+  { title: "套餐剩余流量", dataIndex: "radUser.availableFlow", key: "availableFlow" },
+  { title: "套餐过期时间", dataIndex: "radUser.expireTime", key: "expireTime" },
   { title: "电子邮件", dataIndex: "radUser.email", key: "email" },
-  { title: "创建时间", dataIndex: "radUser.createTime", key: "createTime" },
-  { title: "描述", dataIndex: "radUser.description", key: "description" },
   {
     title: "操作",
-    key: "add",
+    key: "operator",
     fixed: "right",
     width: 150,
     scopedSlots: { customRender: "action" }
   }
 ];
-
+import UserInfo from "./UserInfo"
 export default {
-  components: {},
+  components: {
+    UserInfo
+  },
   data() {
     return {
       data: [],
-      pagination: {},
-      loading: false,
-      columns,
-      managerStates,
       visible: false,
+      drawerVisible: false,
+      placement: "right",
+      pagination: { showTotal: this.showTotal },
+      loading: false,
+      productTypes,
+      columns,
+      userStateList,
+      userStates,
       formLayout: "horizontal",
       form: this.$form.createForm(this),
-      departments: []
+      search: this.$form.createForm(this),
+      departments: [],
+      id: 0,
+      isUpdate: false,
+      userInfo:{}
     };
   },
   methods: {
-    modifyManager(id) {
+    onDrawerClose() {
+      this.drawerVisible = false;
+    },
+    showDrawer(user) {
+      this.userInfo = user;
+      this.drawerVisible = true;
+    },
+    searchUserFunc(e) {
+      e.preventDefault();
+      this.search.validateFields((_, values) => {
+        this.fetchUser({ page: pageInit, ...values  });
+      });
+    },
+    resetSearch() {
+      this.search.resetFields();
+      this.fetchUser({ page: { current: 1, pageSize: 10 } });
+    },
+    showTotal(total) {
+      return "总共" + total + "条数据";
+    },
+    show() {
+      this.visible = true;
+      this.isUpdate = false;
+      this.form.resetFields();
+    },
+    modifyUser(id) {
+      this.isUpdate = true;
       this.axios
-        .post(
-          this.CONFIG.apiUrl + "/manager/info",
-          { id: id },
-          {
-            headers: {
-              rad_access_token: localStorage.getItem("rad_access_token")
-            }
-          }
-        )
+        .post(this.CONFIG.apiUrl + "/user/info", { id: id })
         .then(response => {
-          this.modifyVisible = true;
-          this.updateForm.setFieldsValue(response.data.data);
+          this.visible = true;
+          var data = response.data.data;
+          this.id = data.id;
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
         })
         .catch(() => {
-          alert("修改管理员失败");
+          alert("修改用户失败");
         });
     },
-    deleteManager(id) {
-      if (confirm("确认删除此管理员信息吗?")) {
+    deleteUser(id) {
+      if (confirm("确认删除此用户信息吗?")) {
         this.axios
-          .post(
-            this.CONFIG.apiUrl + "/manager/del",
-            { id: id },
-            {
-              headers: {
-                rad_access_token: localStorage.getItem("rad_access_token")
-              }
-            }
-          )
+          .post(this.CONFIG.apiUrl + "/user/del", { id: id })
           .then(response => {
             alert(response.data.message);
+            this.fetchUser({
+              page: pageInit
+            });
           })
           .catch(error => {
-            alert("删除管理员失败: " + error.response.data.message);
+            alert("删除用户失败: " + error.response.data.message);
           });
       }
     },
-    // 分页
-    handleTableChange(pagination) {
+    // 分页查询
+    searchUserByParams(pagination) {
+      var values = this.search.getFieldsValue();
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
-      this.fetchUsers({
+      this.fetchUser({
         page: {
           pageSize: pagination.pageSize,
           page: pagination.current
-        }
+        },
+        ...values
       });
     },
-    fetchUsers(params = {}) {
+    fetchUser(params = {}) {
       this.loading = true;
       this.axios
         .post(this.CONFIG.apiUrl + "/user/list", params)
@@ -217,29 +366,32 @@ export default {
           const pagination = { ...this.pagination };
           pagination.total = response.data.data.totalCount;
           pagination.pageSize = response.data.data.size;
+          pagination.current = response.data.data.current;
           this.loading = false;
           this.data = response.data.data.data;
           this.pagination = pagination;
         });
     },
-
-    // 弹窗
-    showModal() {
+    // 修改用户信息
+    handleUpdate(values) {
+      values["id"] = this.id;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/manager/update", values)
+        .then(response => {
+          alert(response.data.message);
+          this.fetchUser({
+            page: pageInit
+          });
+        });
+      this.id = 0;
+    },
+    getDepartments() {
       // 获取部门列表
       this.axios
-        .post(
-          this.CONFIG.apiUrl + "/department/list",
-          {},
-          {
-            headers: {
-              rad_access_token: localStorage.getItem("rad_access_token")
-            }
-          }
-        )
+        .post(this.CONFIG.apiUrl + "/fetch/department", {})
         .then(response => {
-          this.departments = response.data.data.data;
+          this.departments = response.data.data;
         });
-      this.visible = true;
     },
 
     // 表单提交
@@ -247,39 +399,63 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
-          console.log("Received values of form: ", values);
+          if (this.isUpdate) {
+            this.handleUpdate(values);
+            this.visible = false;
+            return;
+          }
           this.axios
-            .post(this.CONFIG.apiUrl + "/manager/add", values, {
-              headers: {
-                rad_access_token: localStorage.getItem("rad_access_token")
-              }
-            })
+            .post(this.CONFIG.apiUrl + "/manager/add", values)
             .then(response => {
               alert(response.data.message);
+              this.visible = false;
+              this.fetchUser({
+                page: pageInit
+              });
             })
-            .catch(error => {
-              alert("添加管理员失败: " + error.response.data.message);
+            .catch(() => {
+              alert("添加用户失败");
             });
-        }
-      });
-    },
-    // 需要管理员信息
-    handleUpdate(e) {
-      e.preventDefault();
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log("Received values of form: ", values);
         }
       });
     }
   },
   mounted() {
-    this.fetchUsers({ page: { current: 1, pageSize: 20 } });
+    this.fetchUser({ page: pageInit });
+    this.getDepartments();
   }
 };
 </script>
 
 <style>
+.ant-advanced-search-form {
+  padding: 24px;
+  background: #fbfbfb;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+}
+
+.ant-advanced-search-form .ant-form-item {
+  display: flex;
+}
+
+.ant-advanced-search-form .ant-form-item-control-wrapper {
+  flex: 1;
+}
+
+#components-form-demo-advanced-search .ant-form {
+  max-width: none;
+}
+#components-form-demo-advanced-search .search-result-list {
+  margin-top: 16px;
+  border: 1px dashed #e9e9e9;
+  border-radius: 6px;
+  background-color: #fafafa;
+  min-height: 200px;
+  text-align: center;
+  padding-top: 80px;
+}
+
 #components-layout-demo-side .logo {
   height: 32px;
   background: rgba(255, 255, 255, 0.2);
@@ -296,5 +472,19 @@ export default {
 
 .float-right {
   float: right;
+}
+
+.user-grid-25 {
+  width:25%;
+  text-align:center;
+  height: 30px;
+  padding: 5px;
+  display:block;word-break: break-all;word-wrap: break-word;
+}
+
+.user-grid-50 {
+  width:50%;
+  text-align:center;
+    padding: 5px;
 }
 </style>

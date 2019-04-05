@@ -1,7 +1,7 @@
 <template>
-  <a-layout id="components-layout-demo-side" :style="{ marginLeft: '200px'}">
+  <a-layout id="components-layout-demo-side">
     <Menu />
-    <a-layout>
+    <a-layout :style="{ marginLeft: '200px' }">
       <Header/>
       <router-view/>
       <Footer/>

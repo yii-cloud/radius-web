@@ -11,7 +11,6 @@ export default new Router({
     },
     {
       path: "/index",
-      name: "indexView",
       meta: {
         requireAuth: true
       },

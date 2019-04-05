@@ -9,7 +9,7 @@
         <template>
           <a-form class="ant-advanced-search-form" :form="search">
             <a-row :gutter="24">
-              <a-col :span="4" :style="{ display:'block'}">
+              <a-col :span="6" :style="{ display:'block'}">
                 <a-form-item :label="'用户名'">
                   <a-input
                     v-decorator="[
@@ -19,7 +19,7 @@
                   />
                 </a-form-item>
               </a-col>
-              <a-col :span="4" :style="{ display:'block'}">
+              <a-col :span="6" :style="{ display:'block'}">
                 <a-form-item :label="'姓名'">
                   <a-input
                     v-decorator="[
@@ -29,8 +29,8 @@
                   />
                 </a-form-item>
               </a-col>
-              <a-col :span="4" :style="{ display:'block'}">
-                <a-form-item label="状态" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-col :span="6" :style="{ display:'block'}">
+                <a-form-item :label="'状态'">
                   <a-select
                     v-decorator="[
                                     'status',
@@ -191,7 +191,7 @@
 <script>
 import lodash from "lodash";
 
-const pageInit = { current: 1, pageSize: 10 };
+const pageInit = { page: 1, pageSize: 10 };
 
 const managerStatusList = [
   { key: 1, value: "正常" },
@@ -222,7 +222,7 @@ const columns = [
   { title: "描述", dataIndex: "description", key: "description" },
   {
     title: "操作",
-    key: "add",
+    key: "operator",
     fixed: "right",
     width: 150,
     scopedSlots: { customRender: "action" }
@@ -245,19 +245,18 @@ export default {
       departments: [],
       id: 0,
       isUpdate: false,
-      searchParams: {}
     };
   },
   methods: {
     searchFunc(e) {
       e.preventDefault();
       this.search.validateFields((_, values) => {
-        this.fetchManager({ page: { current: 1, pageSize: 20}, ...values  });
+        this.fetchManager({ page: pageInit, ...values  });
       });
     },
     resetSearch() {
       this.search.resetFields();
-      this.fetchManager({ page: { current: 1, pageSize: 10 } });
+      this.fetchManager({ page: pageInit });
     },
     showTotal(total) {
       return "总共" + total + "条数据";
@@ -292,8 +291,7 @@ export default {
           .then(response => {
             alert(response.data.message);
             this.fetchManager({
-              page: pageInit,
-              ...this.searchParams
+              page: pageInit
             });
           })
           .catch(error => {
@@ -304,7 +302,6 @@ export default {
     // 分页查询
     searchManagerByParams(pagination) {
       var values = this.search.getFieldsValue();
-      console.log(values);
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
@@ -333,14 +330,12 @@ export default {
     // 修改管理员信息
     handleUpdate(values) {
       values["id"] = this.id;
-      console.log("Received values of form: ", values);
       this.axios
         .post(this.CONFIG.apiUrl + "/manager/update", values)
         .then(response => {
           alert(response.data.message);
           this.fetchManager({
-            page: { current: 1, pageSize: 10 },
-            ...this.searchParams
+            page: pageInit
           });
         });
       this.id = 0;
@@ -370,8 +365,7 @@ export default {
               alert(response.data.message);
               this.visible = false;
               this.fetchManager({
-                page: { current: 1, pageSize: 10 },
-                ...this.searchParams
+                page: pageInit
               });
             })
             .catch(() => {
@@ -382,7 +376,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchManager({ page: { current: 1, pageSize: 10 } });
+    this.fetchManager({ page: pageInit });
     this.getDepartments();
   }
 };
@@ -434,11 +428,4 @@ export default {
 .float-right {
   float: right;
 }
-
-.content-dev {
-  padding: "24px";
-  background: white;
-  min-height: calc(100vh - 139px)
-}
-
 </style>
