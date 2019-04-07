@@ -4,7 +4,7 @@
       <a-breadcrumb-item>管理员管理</a-breadcrumb-item>
       <a-breadcrumb-item>管理员列表</a-breadcrumb-item>
     </a-breadcrumb>
-    <div :style="{ padding: '24px', background: '#fff', minHeight: '360px', marginBottom:'69px'}">
+    <div :class="'content-div'">
       <div style="margin-bottom: 10px">
         <template>
           <a-form class="ant-advanced-search-form" :form="search">
@@ -104,7 +104,8 @@
                   <a-form-item label="真实姓名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
                     <a-input
                       v-decorator="[
-                                    'realName'
+                                    'realName',
+                                    {rules: [{ required: !isUpdate, message: '请输入姓名!' }]}
                                     ]"
                     />
                   </a-form-item>
@@ -287,7 +288,7 @@ export default {
     deleteManager(id) {
       if (confirm("确认删除此管理员信息吗?")) {
         this.axios
-          .post(this.CONFIG.apiUrl + "/manager/del", { id: id })
+          .post(this.CONFIG.apiUrl + "/manager/delete", { id: id })
           .then(response => {
             alert(response.data.message);
             this.fetchManager({

@@ -30,7 +30,15 @@ export default new Router({
           meta: {
             requireAuth: true
           },
-          component: () => import("./views/user/User.vue")
+          component: () => import("./views/user/User.vue"),
+        },
+        {
+          path: "/user/add",
+          name: "userAdd",
+          meta: {
+            requireAuth: true
+          },
+          component: () => import("./views/user/UserAdd.vue")
         },
         {
           path: "/product",

@@ -24,5 +24,9 @@ export default {
 </script>
 
 <style>
-
+  .content-div {
+    padding: 24px 24px 39px 24px;
+    background: #fff;
+     min-height: 360px;
+  }
 </style>

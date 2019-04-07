@@ -4,7 +4,7 @@
       <a-breadcrumb-item>用户管理</a-breadcrumb-item>
       <a-breadcrumb-item>用户列表</a-breadcrumb-item>
     </a-breadcrumb>
-    <div :style="{ padding: '24px', background: '#fff', minHeight: '360px', marginBottom:'69px'}">
+    <div :class="'content-div'">
       <div style="margin-bottom: 10px">
         <template>
           <a-form class="ant-advanced-search-form" :form="search">
@@ -57,111 +57,14 @@
           </a-form>
         </template>
       </div>
-      <div style="height:39px">
-        <template>
+      <div style="margin-bottom: 10px">
+        <div style="height:39px">
           <div>
-            <a-button type="primary" @click="show()">
+            <a-button type="primary" @click="addUser">
               <a-icon type="plus"/>添加用户信息
             </a-button>
-            <a-modal
-              :title="isUpdate ? '修改用户信息' : '增加用户'"
-              :maskClosable="false"
-              v-model="visible"
-              :footer="null"
-            >
-              <template>
-                <a-form :form="form" @submit="handleSubmit">
-                  <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
-                      :disabled="isUpdate"
-                      v-decorator="[
-                                    'username',
-                                    {rules: [{ required: true, message: '请输入用户名!' }]}
-                                    ]"
-                    />
-                  </a-form-item>
-                  <a-form-item
-                    v-if="isUpdate"
-                    label="状态"
-                    :label-col="{ span: 5 }"
-                    :wrapper-col="{ span: 12 }"
-                  >
-                    <a-select
-                      v-decorator="[
-                                    'status',
-                                    {rules: [{ required: true, message: '请选择状态!' }]}
-                                    ]"
-                      placeholder="请选择状态"
-                    >
-                      <a-select-option
-                        v-for="item in userStateList"
-                        :key="item.key"
-                        :value="item.key"
-                        :disabled="isUpdate && item.key == 3"
-                      >{{item.value}}</a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <a-form-item label="真实姓名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
-                      v-decorator="[
-                                    'realName'
-                                    ]"
-                    />
-                  </a-form-item>
-                  <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
-                      type="password"
-                      v-decorator="[
-                                    'password',
-                                    {rules: [{ required: !isUpdate, message: '请输入密码!' }]}
-                                    ]"
-                    />
-                  </a-form-item>
-                  <a-form-item label="选择部门" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-select
-                      v-decorator="[
-                                    'departmentId',
-                                    {rules: [{ required: true, message: '请选择部门!' }]}
-                                    ]"
-                      placeholder="请选择部门"
-                    >
-                      <a-select-option
-                        v-for="item in departments"
-                        :key="item.id"
-                        :value="item.id"
-                      >{{item.name}}</a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <a-form-item label="联系方式" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
-                      v-decorator="[
-                                    'mobile'
-                                    ]"
-                    />
-                  </a-form-item>
-                  <a-form-item label="电子邮件" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
-                      v-decorator="[
-                                    'email'
-                                    ]"
-                    />
-                  </a-form-item>
-                  <a-form-item label="描述信息" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-textarea
-                      v-decorator="[
-                                    'description'
-                                    ]"
-                      :rows="3"
-                    />
-                  </a-form-item>
-                  <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
-                    <a-button type="primary" html-type="submit">提交</a-button>
-                  </a-form-item>
-                </a-form>
-              </template>
-            </a-modal>
           </div>
-        </template>
+        </div>
       </div>
       <template>
         <div>
@@ -279,7 +182,7 @@ export default {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       search: this.$form.createForm(this),
-      departments: [],
+      products: [],
       id: 0,
       isUpdate: false,
       userInfo:{}
@@ -332,7 +235,7 @@ export default {
     deleteUser(id) {
       if (confirm("确认删除此用户信息吗?")) {
         this.axios
-          .post(this.CONFIG.apiUrl + "/user/del", { id: id })
+          .post(this.CONFIG.apiUrl + "/user/delete", { id: id })
           .then(response => {
             alert(response.data.message);
             this.fetchUser({
@@ -385,15 +288,10 @@ export default {
         });
       this.id = 0;
     },
-    getDepartments() {
-      // 获取部门列表
-      this.axios
-        .post(this.CONFIG.apiUrl + "/fetch/department", {})
-        .then(response => {
-          this.departments = response.data.data;
-        });
+    
+    addUser() {
+      this.$router.push('/user/add');
     },
-
     // 表单提交
     handleSubmit(e) {
       e.preventDefault();
@@ -422,7 +320,6 @@ export default {
   },
   mounted() {
     this.fetchUser({ page: pageInit });
-    this.getDepartments();
   }
 };
 </script>
@@ -445,15 +342,6 @@ export default {
 
 #components-form-demo-advanced-search .ant-form {
   max-width: none;
-}
-#components-form-demo-advanced-search .search-result-list {
-  margin-top: 16px;
-  border: 1px dashed #e9e9e9;
-  border-radius: 6px;
-  background-color: #fafafa;
-  min-height: 200px;
-  text-align: center;
-  padding-top: 80px;
 }
 
 #components-layout-demo-side .logo {
