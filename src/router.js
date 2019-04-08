@@ -4,6 +4,7 @@ import Router from "vue-router";
 Vue.use(Router);
 
 export default new Router({
+  mode: 'history',
   routes: [{
       path: "/",
       name: "login",
@@ -39,6 +40,14 @@ export default new Router({
             requireAuth: true
           },
           component: () => import("./views/user/UserAdd.vue")
+        },
+        {
+          path: "/user/modify",
+          name: "UserModify",
+          meta: {
+            requireAuth: true
+          },
+          component: () => import("./views/user/UserModify.vue")
         },
         {
           path: "/product",

@@ -260,7 +260,7 @@ export default {
       this.fetchManager({ page: pageInit });
     },
     showTotal(total) {
-      return "总共" + total + "条数据";
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
     },
     show() {
       this.visible = true;

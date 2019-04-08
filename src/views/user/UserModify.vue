@@ -2,12 +2,12 @@
   <a-layout-content style="margin: 0 16px;">
     <a-breadcrumb style="margin: 16px 0">
       <a-breadcrumb-item>用户管理</a-breadcrumb-item>
-      <a-breadcrumb-item>添加用户</a-breadcrumb-item>
+      <a-breadcrumb-item>修改用户</a-breadcrumb-item>
     </a-breadcrumb>
     <div :class="'content-div'">
       <a-form :form="form" :style="{width:'800px', margin:'auto auto'}" @submit="handleSubmit">
         <a-form-item label="用户名" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-input
+          <a-input disabled
             v-decorator="[
               'username',
               {rules: [{ required: true, message: '请输入用户名!' }]}
@@ -17,10 +17,9 @@
         </a-form-item>
         <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
-            type="password" placeholder="请输入密码"
+            type="password" placeholder="选填,留空表示不修改"
             v-decorator="[
-                          'password',
-                          {rules: [{ required: true, message: '请输入密码!' }]}
+                          'password'
                           ]"
           />
         </a-form-item>
@@ -33,9 +32,23 @@
             placeholder="请输入姓名"
           ></a-input>
         </a-form-item>
-        <a-form-item label="订购套餐" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item label="状态" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-select
-            @change="productSelected"
+            v-decorator="[
+          'status',
+          {rules: [{ required: true, message: '请选择状态!' }]}
+        ]"
+            placeholder="请选择状态"
+          >
+            <a-select-option
+              v-for="item in userStateList"
+              :key="item.key"
+              :value="item.key"
+            >{{item.value}}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="订购套餐" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-select disabled
             v-decorator="[
           'productId',
           {rules: [{ required: true, message: '请选择套餐!' }]}
@@ -58,7 +71,7 @@
               <a-icon type="question-circle-o" />
             </a-tooltip>
           </span>
-          <a-date-picker style="width:100%" placeholder="选填,到期时间"
+          <a-date-picker style="width:100%" placeholder="选填,到期时间" disabled
             v-decorator="['expireTime', {initialValue: expire,rules: [{ type: 'object'}]}]"
           />
         </a-form-item>
@@ -97,7 +110,7 @@
           />
         </a-form-item>
         <a-form-item :wrapper-col="{ span: 12, offset: 5}">
-          <a-button type="primary" style="width:100%" html-type="submit">提交</a-button>
+          <a-button type="primary" style="width:100%" html-type="submit">提交修改</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -105,6 +118,15 @@
 </template>
 
 <script>
+
+const userStateList = [
+  { key: 1, value: "正常" },
+  { key: 2, value: "停机" },
+  { key: 3, value: "禁用" },
+  { key: 4, value: "销户" }
+];
+
+import lodash from "lodash";
 import moment from "moment";
 export default {
   data() {
@@ -112,10 +134,36 @@ export default {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       products: [],
-      expire:null
+      userStateList,
+      expire:null,
+      id: 0,
     };
   },
   methods: {
+    getUserInfo() {
+      var id = parseInt(this.$route.query.id);
+      this.isUpdate = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/user/info", { id: id })
+        .then(response => {
+          this.visible = true;
+          var data = response.data.data;
+          this.id = data.id;
+          var expire = data['expireTime'];
+          if(expire != null) {
+              data['expireTime'] = moment(expire);
+          }
+
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
+        })
+        .catch(() => {
+          alert("修改用户失败");
+        });
+    },
     fetchProducts() {
       this.axios
         .post(this.CONFIG.apiUrl + "/fetch/product", {})
@@ -126,13 +174,11 @@ export default {
     handleSubmit(e) {
       e.preventDefault();
       this.form.validateFields((err, values) => {
-        var expire = values["expireTime"];
-        if(expire != null) {
-          expire = expire.format("YYYY-MM-DD HH:mm:ss");
-        }
         if (!err) {
+          delete values.expireTime;
+          values['id'] = this.id;
           this.axios
-            .post(this.CONFIG.apiUrl + "/user/add", values)
+            .post(this.CONFIG.apiUrl + "/user/update", values)
             .then(response => {
               alert(response.data.message);
               this.$router.push("/user");
@@ -140,17 +186,11 @@ export default {
             .catch(() => {});
         }
       });
-    },
-    productSelected(value, option) {
-      if(option.data.attrs.type == 1) {
-          var m = option.data.attrs.serviceMonth;
-          var expireDate = moment().add(m, "M");
-          this.expire = expireDate;
-        }
     }
   },
   mounted() {
     this.fetchProducts();
+    this.getUserInfo();
   }
 };
 </script>

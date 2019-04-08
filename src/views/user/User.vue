@@ -88,18 +88,21 @@
         :rowKey="record => record.radUser.id"
         @change="searchUserByParams"
       >
+        <template slot="statusName" slot-scope="text">
+          <div :style="getStatusColor(text)">{{userStates[text]}}</div>
+        </template>
         <template slot="username" slot-scope="record">
           <a href="javascript:;" @click="showDrawer(record)">{{record.radUser.username}}</a>
         </template>
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyUser(record.id)">
+            <a href="javascript:;" @click="modifyUser(record.radUser.id)">
               <a-icon type="edit"/> 修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteUser(record.id)">
+            <a style="color:#da6868" @click="deleteUser(record.radUser.id)">
               <a-icon type="delete"/> 删除
             </a>
           </span>
@@ -114,15 +117,15 @@ const pageInit = { page: 1, pageSize: 10 };
 const userStateList = [
   { key: 1, value: "正常" },
   { key: 2, value: "停机" },
-  { key: 3, value: "销户" },
-  { key: 4, value: "禁用" }
+  { key: 3, value: "禁用" },
+  { key: 4, value: "销户" }
 ];
 
 const userStates = {
   1: "正常",
   2: "停机",
-  3: "销户",
-  4: "禁用",
+  3: "禁用",
+  4: "销户",
 };
 
 const productTypes = {
@@ -145,9 +148,7 @@ const columns = [
     title: "状态",
     dataIndex: "radUser.status",
     key: "status",
-    customRender: text => {
-      return userStates[text];
-    }
+    scopedSlots: { customRender: "statusName" }
   },
   { title: "手机号码", dataIndex: "radUser.mobile", key: "mobile" },
   { title: "套餐剩余时长", dataIndex: "radUser.availableTime", key: "availableTime" },
@@ -180,7 +181,6 @@ export default {
       userStateList,
       userStates,
       formLayout: "horizontal",
-      form: this.$form.createForm(this),
       search: this.$form.createForm(this),
       products: [],
       id: 0,
@@ -189,6 +189,9 @@ export default {
     };
   },
   methods: {
+    getStatusColor(text) {
+        return text == 4 ? {color: 'red'} : ( text == 3 ? {color: '#FF9933'} : (text == 2 ? {color:'#cc6869'} :{color:'#1890ff'}))
+    },
     onDrawerClose() {
       this.drawerVisible = false;
     },
@@ -207,7 +210,7 @@ export default {
       this.fetchUser({ page: { current: 1, pageSize: 10 } });
     },
     showTotal(total) {
-      return "总共" + total + "条数据";
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
     },
     show() {
       this.visible = true;
@@ -215,22 +218,7 @@ export default {
       this.form.resetFields();
     },
     modifyUser(id) {
-      this.isUpdate = true;
-      this.axios
-        .post(this.CONFIG.apiUrl + "/user/info", { id: id })
-        .then(response => {
-          this.visible = true;
-          var data = response.data.data;
-          this.id = data.id;
-          this.$nextTick(() => {
-            this.form.setFieldsValue(
-              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
-            );
-          });
-        })
-        .catch(() => {
-          alert("修改用户失败");
-        });
+        this.$router.push({path:'/user/modify', query:{id: id}})
     },
     deleteUser(id) {
       if (confirm("确认删除此用户信息吗?")) {
