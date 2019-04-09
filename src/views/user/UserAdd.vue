@@ -49,6 +49,7 @@
               :value="item.id"
               :type="item.type"
               :serviceMonth="item.serviceMonth"
+              :product="item"
             >{{item.name}}</a-select-option>
           </a-select>
         </a-form-item>
@@ -81,6 +82,11 @@
             placeholder="选填,到期时间"
             v-decorator="['expireTime', {initialValue: expire,rules: [{ type: 'object'}]}]"
           />
+        </a-form-item>
+        <a-form-item label="价格" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-input placeholder="价格" v-decorator="[
+          'price', {initialValue: price}
+        ]"/>
         </a-form-item>
         <a-form-item label="静态IP地址" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input placeholder="选填，静态IP地址" v-decorator="[
@@ -136,7 +142,9 @@ export default {
       count: 1,
       isMonthy: false,
       expire: null,
-      productServiceMonth: 0
+      productServiceMonth: 0,
+      product:null,
+      price: null,
     };
   },
   methods: {
@@ -168,6 +176,8 @@ export default {
       });
     },
     productSelected(value, option) {
+      this.product = option.data.attrs.product;
+      this.price = this.product.price / 100.0;
       if (option.data.attrs.type == 1) {
         this.isMonthy = true;
         var m = option.data.attrs.serviceMonth;
@@ -181,11 +191,13 @@ export default {
       }
     },
     countChanged(e) {
-      if (this.productServiceMonth == 0) {
+      var countStr = this.form.getFieldValue("count")
+      if (this.productServiceMonth == 0 || isNaN(countStr) || countStr == '0') {
         this.expire = null;
         return;
       }
-      var count = parseInt(this.form.getFieldValue("count"));
+      var count = parseInt(countStr);
+      this.price = this.price * count;
       var months = this.productServiceMonth * count;
       var expireDate = moment().add(months, "M");
       this.expire = expireDate;

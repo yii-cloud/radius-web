@@ -96,6 +96,12 @@
         </template>
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
+            <a href="javascript:;">
+              <a-icon type="select" /> 续订
+            </a>
+          </span>
+          <a-divider type="vertical"/>
+          <span>
             <a href="javascript:;" @click="modifyUser(record.radUser.id)">
               <a-icon type="edit"/> 修改
             </a>
@@ -159,7 +165,7 @@ const columns = [
     title: "操作",
     key: "operator",
     fixed: "right",
-    width: 150,
+    width: 220,
     scopedSlots: { customRender: "action" }
   }
 ];
