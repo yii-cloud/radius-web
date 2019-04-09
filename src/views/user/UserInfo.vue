@@ -62,23 +62,80 @@
       <a-card-grid :class="'user-grid-25'">下行限速(M)：</a-card-grid>
       <a-card-grid :class="'user-grid-25'">{{userInfo.radProduct.downStreamLimit / 1024}}</a-card-grid>
     </a-card>
+    <a-card title="订购记录" :style="{ marginTop: '10px' }">
+      <template>
+        <a-list :dataSource="listData">
+          <a-list-item slot="renderItem" slot-scope="item">
+            <a-card>
+              <a-card-grid :class="'user-grid-50'">产品名称：</a-card-grid>
+              <a-card-grid :style="productColor(item)" :class="'user-grid-50'">{{item.radProduct.name}}</a-card-grid>
+              <a-card-grid :class="'user-grid-50'">订单时间：</a-card-grid>
+              <a-card-grid :class="'user-grid-50'">{{item.userOrderRecord.orderTime}}</a-card-grid>
+              <a-card-grid :class="'user-grid-50'">服务截止日期：</a-card-grid>
+              <a-card-grid :class="'user-grid-50'">{{item.userOrderRecord.endDate.substring(0, 10)}}</a-card-grid>
+              <a-card-grid :class="'user-grid-25'">费用：</a-card-grid>
+              <a-card-grid :class="'user-grid-25'">{{item.userOrderRecord.price / 100.0}}元</a-card-grid>
+              <a-card-grid :class="'user-grid-25'">状态：</a-card-grid>
+              <a-card-grid :style="productColor(item)" :class="'user-grid-25'">{{orderStatus[item.userOrderRecord.status]}}</a-card-grid>
+            </a-card>
+           </a-list-item>
+        </a-list>
+      </template>
+    </a-card>
   </div>
+  
 </template>
 
 <script>
+import userConstant from "./userConstant";
 
-import userConstant from "./userConstant"
+const orderStatus = {
+   1: "预定",
+   2: "使用中",
+   3: "已取消",
+   4: "服务截止",
+}
 
 export default {
     name: "userInfo",
-    props: ["userInfo"],
+    props: ["userInfo","userId"],
     data() {
         return {
             userStateList: userConstant.userStateList,
             userStates: userConstant.userStates,
             productTypes: userConstant.productTypes,
+            listData: [],
+            orderStatus
         }
-    }
-
+    },
+    methods:{
+      productColor(item) {
+        var status = item.userOrderRecord.status;
+        if(status == 1) {
+           return {color: '#009688'};
+        } else if(status == 2) {
+          return {color:'#0e7fd8'};
+        } else if(status == 3) {
+          return {color:'#ea9e65'};
+        }
+      }
+    },
+    mounted() {
+      this.axios.post(this.CONFIG.apiUrl + "/user/order/record",{
+          id: this.userInfo.radUser.id
+        }).then(response => {
+            this.listData = response.data.data;
+        });
+    },
+    watch: {
+      userId(value) {
+        console.log(value);
+        this.axios.post(this.CONFIG.apiUrl + "/user/order/record",{
+          id: value
+        }).then(response => {
+            this.listData = response.data.data;
+        });
+      }
+    },
 }
 </script>

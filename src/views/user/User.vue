@@ -76,7 +76,7 @@
             @close="onDrawerClose"
             :visible="drawerVisible"
           >
-          <UserInfo :userInfo="userInfo" />    
+          <UserInfo :userInfo="userInfo" :userId="userId" />    
           </a-drawer>
         </div>
       </template>
@@ -185,7 +185,8 @@ export default {
       products: [],
       id: 0,
       isUpdate: false,
-      userInfo:{}
+      userInfo:{},
+      userId: 0
     };
   },
   methods: {
@@ -197,6 +198,7 @@ export default {
     },
     showDrawer(user) {
       this.userInfo = user;
+      this.userId = user.radUser.id;
       this.drawerVisible = true;
     },
     searchUserFunc(e) {
