@@ -361,6 +361,8 @@ export default {
 .user-grid-50 {
   width:50%;
   text-align:center;
-    padding: 5px;
+  padding: 5px;
+  min-height: 31px;
+  display:block;word-break: break-all;word-wrap: break-word;
 }
 </style>

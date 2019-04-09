@@ -17,7 +17,8 @@
         </a-form-item>
         <a-form-item label="密码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
-            type="password" placeholder="请输入密码"
+            type="password"
+            placeholder="请输入密码"
             v-decorator="[
                           'password',
                           {rules: [{ required: true, message: '请输入密码!' }]}
@@ -47,18 +48,37 @@
               :key="item.id"
               :value="item.id"
               :type="item.type"
-              :serviceMonth = "item.serviceMonth"
+              :serviceMonth="item.serviceMonth"
             >{{item.name}}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" >
+        <a-form-item
+          :hidden="!isMonthy"
+          label="套餐倍数"
+          :label-col="{ span: 5 }"
+          :wrapper-col="{ span: 12 }"
+        >
+          <a-input
+            @blur="countChanged()"
+            v-decorator="[
+          'count',
+          {rules: [{ required: true, message: '套餐倍数必须是大于0的整数，默认1',
+                      validator: validateCount}], 
+                      initialValue: 1 }
+        ]"
+            placeholder="套餐倍数，默认1"
+          ></a-input>
+        </a-form-item>
+        <a-form-item :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <span slot="label">
             到期时间
             <a-tooltip title="流量和时长套餐可选择套餐使用的截止时间,不选择则使用套餐默认值(当日,当月,无限)！">
-              <a-icon type="question-circle-o" />
+              <a-icon type="question-circle-o"/>
             </a-tooltip>
           </span>
-          <a-date-picker style="width:100%" placeholder="选填,到期时间"
+          <a-date-picker
+            style="width:100%"
+            placeholder="选填,到期时间"
             v-decorator="['expireTime', {initialValue: expire,rules: [{ type: 'object'}]}]"
           />
         </a-form-item>
@@ -106,13 +126,17 @@
 
 <script>
 import moment from "moment";
+import { isNumber, isNull } from 'util';
 export default {
   data() {
     return {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       products: [],
-      expire:null
+      count: 1,
+      isMonthy: false,
+      expire: null,
+      productServiceMonth: 0
     };
   },
   methods: {
@@ -127,10 +151,12 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         var expire = values["expireTime"];
-        if(expire != null) {
+        if (expire != null) {
           expire = expire.format("YYYY-MM-DD HH:mm:ss");
+          values["expireTime"] = expire;
         }
         if (!err) {
+          values["count"] = parseInt(values["count"]);
           this.axios
             .post(this.CONFIG.apiUrl + "/user/add", values)
             .then(response => {
@@ -142,11 +168,35 @@ export default {
       });
     },
     productSelected(value, option) {
-      if(option.data.attrs.type == 1) {
-          var m = option.data.attrs.serviceMonth;
-          var expireDate = moment().add(m, "M");
-          this.expire = expireDate;
-        }
+      if (option.data.attrs.type == 1) {
+        this.isMonthy = true;
+        var m = option.data.attrs.serviceMonth;
+        this.productServiceMonth = m;
+        var expireDate = moment().add(m, "M");
+        this.expire = expireDate;
+      } else {
+        this.isMonthy = false;
+        this.form.setFieldsValue({ count: 1 });
+        this.expire = null;
+      }
+    },
+    countChanged(e) {
+      if (this.productServiceMonth == 0) {
+        this.expire = null;
+        return;
+      }
+      var count = parseInt(this.form.getFieldValue("count"));
+      var months = this.productServiceMonth * count;
+      var expireDate = moment().add(months, "M");
+      this.expire = expireDate;
+    },
+    validateCount(_, value, callback) {
+      if(isNaN(value) || value <= 0 ) {
+          callback("必须是数字并且大于0");
+          this.expire = null;
+          return;
+      } 
+      callback();
     }
   },
   mounted() {

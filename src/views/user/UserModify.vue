@@ -44,6 +44,7 @@
               v-for="item in userStateList"
               :key="item.key"
               :value="item.key"
+              :disabled = "item.key == 4"
             >{{item.value}}</a-select-option>
           </a-select>
         </a-form-item>
@@ -91,8 +92,7 @@
              ]" placeholder="选填，电子邮件"/>
         </a-form-item>
         <a-form-item label="装机地址" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-textarea
-            :row="3"
+          <a-textarea :row="5"
             placeholder="请输入装机地址"
             v-decorator="[
           'installedAddr',
