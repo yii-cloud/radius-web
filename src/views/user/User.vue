@@ -67,6 +67,86 @@
         </div>
       </div>
       <template>
+        <a-modal
+          title="续订套餐"
+          v-model="continueVisible"
+          :footer="null"
+          :maskClosable=false
+        >
+          <template>
+            <a-form
+              :form="continueForm"
+              @submit="handleContinue"
+            >
+              <a-form-item
+                label="ID"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 12 }"
+                :hidden="'hidden'"
+              >
+                <a-input :disabled=true
+                  v-decorator="[
+                    'id',
+                    {rules: [{ required: true}]}
+                  ]"
+                />
+              </a-form-item>
+              <a-form-item
+                label="用户账号"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 12 }"
+              >
+                <a-input :disabled=true
+                  v-decorator="[
+                    'username',
+                    {rules: [{ required: true}]}
+                  ]"
+                />
+              </a-form-item>
+              <a-form-item
+                label="姓名"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 12 }"
+              >
+                <a-input :disabled=true
+                  v-decorator="[
+                    'realName',
+                    {rules: [{ required: true}]}
+                  ]"
+                />
+              </a-form-item>
+              <a-form-item
+                label="选择产品"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 12 }"
+              >
+                <a-select
+                  v-decorator="[
+                    'productId',
+                    {rules: [{ required: true, message: '请选择续订产品!' }]}
+                  ]"
+                  placeholder="请选择续订产品"
+                >
+                  <a-select-option v-for="p in products" :value="p.id" :key="p.id">
+                    {{p.name}}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+              <a-form-item
+                :wrapper-col="{ span: 12, offset: 5 }"
+              >
+                <a-button
+                  type="primary"
+                  html-type="submit"
+                >
+                  确认提交
+                </a-button>
+              </a-form-item>
+            </a-form>
+          </template>
+        </a-modal>
+      </template>
+      <template>
         <div>
           <a-drawer
             title="用户详情"
@@ -96,7 +176,7 @@
         </template>
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a href="javascript:;">
+            <a href="javascript:;" @click="userContinue(record.radUser)">
               <a-icon type="select" /> 续订
             </a>
           </span>
@@ -170,6 +250,7 @@ const columns = [
   }
 ];
 import UserInfo from "./UserInfo"
+import { error } from 'util';
 export default {
   components: {
     UserInfo
@@ -178,6 +259,7 @@ export default {
     return {
       data: [],
       visible: false,
+      continueVisible: false,
       drawerVisible: false,
       placement: "right",
       pagination: { showTotal: this.showTotal },
@@ -188,14 +270,47 @@ export default {
       userStates,
       formLayout: "horizontal",
       search: this.$form.createForm(this),
+      continueForm: this.$form.createForm(this),
       products: [],
       id: 0,
       isUpdate: false,
       userInfo:{},
-      userId: 0
+      userId: 0,
+      continueUser: null,
     };
   },
   methods: {
+    fetchProducts() {
+      this.axios
+        .post(this.CONFIG.apiUrl + "/fetch/product", {})
+        .then(response => {
+          this.products = response.data.data;
+        });
+    },
+    handleContinue(e) {
+       e.preventDefault();
+       this.continueForm.validateFields((err, values) => {
+         console.log(values);
+         this.axios.post(this.CONFIG.apiUrl + "/user/continue", values).then(response => {
+             alert(response.data.message);
+             this.$router.push("/user");
+             return;
+         }).catch((error) => {
+            alert("续订失败,errorCode=1");
+         });
+       });
+    },
+    userContinue(user) {
+      this.continueForm.resetFields();
+      this.continueVisible = true;
+      this.continueUser = user;
+      this.fetchProducts();
+      delete user.productId;
+      this.$nextTick(() => {
+          this.continueForm.setFieldsValue(lodash.pick(user, Object.keys(this.continueForm.getFieldsValue())));
+      });
+      
+    },
     getStatusColor(text) {
         return text == 4 ? {color: 'red'} : ( text == 3 ? {color: '#FF9933'} : (text == 2 ? {color:'#cc6869'} :{color:'#1890ff'}))
     },
