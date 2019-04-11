@@ -8,34 +8,66 @@
       <a-table
         :columns="columns"
         :dataSource="data"
-        :pagination="pagination"
-        :scroll="{ x: 1300}"
-        :rowKey="record => record.id"
+        :expandRowByClick="true"
+        class="components-table-demo-nested"
+        @expand="rowExpand"
       >
+        <a slot="operation" href="javascript:;">Publish</a>
+        <a-table
+          slot="expandedRowRender"
+          slot-scope="record"
+          :columns="columns"
+          :dataSource="record"
+          :pagination="false"
+        >
+          <span slot="status">
+            <a-badge status="success"/>Finished
+          </span>
+          <span slot="operation" class="table-operation">
+            <a href="javascript:;">Pause</a>
+            <a href="javascript:;">Stop</a>
+            <a-dropdown>
+              <a-menu slot="overlay">
+                <a-menu-item>Action 1</a-menu-item>
+                <a-menu-item>Action 2</a-menu-item>
+              </a-menu>
+              <a href="javascript:;">
+                More
+                <a-icon type="down"/>
+              </a>
+            </a-dropdown>
+          </span>
+        </a-table>
       </a-table>
     </div>
   </a-layout-content>
 </template>
 <script>
 const resTypeObj = {
-    0: "模块",
-    2: "栏目",
-    0: "按钮",
-}
+  1: "模块",
+  2: "栏目",
+  3: "按钮"
+};
 const columns = [
   { title: "名称", dataIndex: "name", key: "name" },
-  { title: "URL", dataIndex: "url", key: "url"},
-  { title: "类型", dataIndex: "type", key: "type",
-    customRender: (text) => {
-        return resTypeObj[text];
+  { title: "URL", dataIndex: "url", key: "url" },
+  {
+    title: "类型",
+    dataIndex: "type",
+    key: "type",
+    customRender: text => {
+      return resTypeObj[text];
     }
   },
-  { title: "权限标识", dataIndex: "permMark", key: "permMark"},
+  { title: "权限标识", dataIndex: "permMark", key: "permMark" },
   { title: "创建时间", dataIndex: "createTime", key: "createTime" },
   { title: "最近修改时间", dataIndex: "updateTime", key: "updateTime" },
-  { title: "是否需要权限", dataIndex: "needPrem", key: "needPrem", 
-    customRender: (text) => {
-        return text == 0 ? '不需要' : '需要';
+  {
+    title: "是否需要权限",
+    dataIndex: "needPrem",
+    key: "needPrem",
+    customRender: text => {
+      return text == 0 ? "不需要" : "需要";
     }
   },
   { title: "描述", dataIndex: "description", key: "description" }
@@ -46,12 +78,16 @@ export default {
     return {
       data: [],
       pagination: { showTotal: this.showTotal },
-      columns,
+      columns
     };
   },
   methods: {
-      showTotal(total) {
-        return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    showTotal(total) {
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    },
+    rowExpand(e) {
+          console.log("expand");
+          console.log("你搞笑啊" + e);
       }
   }
 };

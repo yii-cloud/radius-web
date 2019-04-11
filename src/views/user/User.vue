@@ -390,7 +390,7 @@ export default {
     handleUpdate(values) {
       values["id"] = this.id;
       this.axios
-        .post(this.CONFIG.apiUrl + "/manager/update", values)
+        .post(this.CONFIG.apiUrl + "/user/update", values)
         .then(response => {
           alert(response.data.message);
           this.fetchUser({

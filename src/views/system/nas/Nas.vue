@@ -37,11 +37,11 @@
                                     ]"
                     placeholder="请选择厂商"
                   >
-                    <a-select-option value="0">标准</a-select-option>
-                    <a-select-option value="9">思科</a-select-option>
-                    <a-select-option value="2011">华为</a-select-option>
-                    <a-select-option value="3902">中兴</a-select-option>
-                    <a-select-option value="14988">MikroTik</a-select-option>
+                    <a-select-option :value="1">标准</a-select-option>
+                    <a-select-option :value="9">思科</a-select-option>
+                    <a-select-option :value="2011">华为</a-select-option>
+                    <a-select-option :value="3902">中兴</a-select-option>
+                    <a-select-option :value="14988">MikroTik</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -88,12 +88,14 @@
                     <a-select
                       v-decorator="[
                                     'vendorId',
-                                    {rules: [{ required: true, message: '请选择NAS厂商!' }]}]" placeholder="请选择NAS厂商">
-                      <a-select-option value="0">标准</a-select-option>
-                      <a-select-option value="9">思科</a-select-option>
-                      <a-select-option value="2011">华为</a-select-option>
-                      <a-select-option value="3902">中兴</a-select-option>
-                      <a-select-option value="14988">MikroTik</a-select-option>
+                                    {rules: [{ required: true, message: '请选择NAS厂商!' }]}]"
+                      placeholder="请选择NAS厂商"
+                    >
+                      <a-select-option :value="1">标准</a-select-option>
+                      <a-select-option :value="9">思科</a-select-option>
+                      <a-select-option :value="2011">华为</a-select-option>
+                      <a-select-option :value="3902">中兴</a-select-option>
+                      <a-select-option :value="14988">MikroTik</a-select-option>
                     </a-select>
                   </a-form-item>
                   <a-form-item label="IP地址" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -144,6 +146,7 @@
         :pagination="pagination"
         :scroll="{ x: 1300}"
         :rowKey="record => record.id"
+        @change="searchNasByParams"
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
@@ -163,20 +166,23 @@
   </a-layout-content>
 </template>
 <script>
-// import lodash from "lodash";
-// const pageInit = { page: 1, pageSize: 10 };
+import lodash from "lodash";
+const pageInit = { page: 1, pageSize: 10 };
 const vendorTypeObj = {
-    0: "标准",
-    9: "思科",
-    2011: "华为",
-    3902: "中兴",
-    14988: "MikroTik",
-}
+  1: "标准",
+  9: "思科",
+  2011: "华为",
+  3902: "中兴",
+  14988: "MikroTik"
+};
 const columns = [
   { title: "名称", dataIndex: "name", key: "name" },
-  { title: "厂商", dataIndex: "vendorId", key: "vendorId",
-    customRender: (text) => {
-        return vendorTypeObj[text];
+  {
+    title: "厂商",
+    dataIndex: "vendorId",
+    key: "vendorId",
+    customRender: text => {
+      return vendorTypeObj[text];
     }
   },
   { title: "IP地址", dataIndex: "ipAddr", key: "ipAddr" },
@@ -203,27 +209,121 @@ export default {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       search: this.$form.createForm(this),
-      isUpdate: false
+      isUpdate: false,
+      id:0,
     };
   },
   methods: {
-      resetSearch() {
-
-      },
-      searchFunc(e) {
-         e.preventDefault();
-      },
-      showTotal(total) {
-        return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
-      },
-      show() {
-        this.visible = true;
-        this.isUpdate = false;
-        this.form.resetFields();
-      },
-      handleSubmit(e) {
-        e.preventDefault();
+    resetSearch() {
+      this.search.resetFields();
+      this.listNas({ page: pageInit });
+    },
+    searchFunc(e) {
+      e.preventDefault();
+      this.search.validateFields((_, values) => {
+        this.listNas({ page: pageInit, ...values });
+      });
+    },
+    showTotal(total) {
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    },
+    show() {
+      this.visible = true;
+      this.isUpdate = false;
+      this.form.resetFields();
+    },
+    listNas(params = {}) {
+      this.loading = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/nas/list", params)
+        .then(response => {
+          const pagination = { ...this.pagination };
+          pagination.total = response.data.data.totalCount;
+          pagination.pageSize = response.data.data.size;
+          pagination.current = response.data.data.current;
+          this.loading = false;
+          this.data = response.data.data.data;
+          this.pagination = pagination;
+        });
+    },
+    searchNasByParams(pagination) {
+      var values = this.search.getFieldsValue();
+      const pager = { ...this.pagination };
+      pager.current = pagination.current;
+      this.pagination = pager;
+      this.listNas({
+        page: {
+          pageSize: pagination.pageSize,
+          page: pagination.current
+        },
+        ...values
+      });
+    },
+    modifyNas(id) {
+      this.isUpdate = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/nas/info", { id: id })
+        .then(response => {
+          this.visible = true;
+          var data = response.data.data;
+          this.id = data.id;
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
+        })
+        .catch(() => {
+          alert("修改Nas失败");
+        });
+    },
+    handleSubmit(e) {
+      e.preventDefault();
+      this.form.validateFields((err, values) => {
+        if (!err) {
+          var url = this.CONFIG.apiUrl + "/nas/add";
+          if (this.isUpdate) {
+            values["id"] = this.id;
+            this.visible = false;
+            url = this.CONFIG.apiUrl + "/nas/update";
+          }
+          this.axios
+            .post(url, values)
+            .then(response => {
+              alert(response.data.message);
+              if(response.data.code == 1) {
+                return;
+              }
+              this.visible = false;
+              this.listNas({
+                page: pageInit
+              });
+            })
+            .catch(() => {
+              alert("NAS操作失败");
+            });
+        }
+      });
+    },
+    deleteNas(id) {
+      if (confirm("确认删除此NAS信息吗?")) {
+        this.axios
+          .post(this.CONFIG.apiUrl + "/nas/delete", { id: id })
+          .then(response => {
+            alert(response.data.message);
+            this.listNas({
+              page: pageInit
+            });
+          })
+          .catch(error => {
+            console.log(error);
+            alert("删除NAS失败");
+          });
       }
+    }
+  },
+  mounted() {
+    this.listNas({ page: pageInit });
   }
 };
 </script>
