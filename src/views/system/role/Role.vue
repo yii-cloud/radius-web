@@ -67,7 +67,7 @@
                     <a-input
                       v-decorator="[
                                     'name',
-                                    {rules: [{ required: !isUpdate, message: '请输入角色名称!' }]}
+                                    {rules: [{ required: true, message: '请输入角色名称!' }]}
                                     ]"
                     />
                   </a-form-item>

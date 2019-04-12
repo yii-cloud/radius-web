@@ -102,7 +102,7 @@
                     <a-input
                       v-decorator="[
                                     'ipAddr',
-                                    {rules: [{ required: !isUpdate, message: '请输入NAS IP地址!' }]}
+                                    {rules: [{ required: true, message: '请输入NAS IP地址!' }]}
                                     ]"
                     />
                   </a-form-item>
@@ -110,7 +110,7 @@
                     <a-input
                       v-decorator="[
                                     'secret',
-                                    {rules: [{ required: !isUpdate, message: '请输入认证秘钥!' }]}
+                                    {rules: [{ required: true, message: '请输入认证秘钥!' }]}
                                     ]"
                     />
                   </a-form-item>
