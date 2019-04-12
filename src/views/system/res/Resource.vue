@@ -5,38 +5,21 @@
       <a-breadcrumb-item>菜单列表</a-breadcrumb-item>
     </a-breadcrumb>
     <div :class="'content-div'">
-      <a-table
+      <a-table style="margin-bottom: 20px"
         :columns="columns"
         :dataSource="data"
-        :expandRowByClick="true"
+        :bordered=true
+        :rowKey="record => record.id"
         class="components-table-demo-nested"
-        @expand="rowExpand"
+        :pagination="false"
       >
-        <a slot="operation" href="javascript:;">Publish</a>
         <a-table
-          slot="expandedRowRender"
           slot-scope="record"
           :columns="columns"
-          :dataSource="record"
+          :dataSource="record.children"
+          :rowKey="record => record.id"
           :pagination="false"
         >
-          <span slot="status">
-            <a-badge status="success"/>Finished
-          </span>
-          <span slot="operation" class="table-operation">
-            <a href="javascript:;">Pause</a>
-            <a href="javascript:;">Stop</a>
-            <a-dropdown>
-              <a-menu slot="overlay">
-                <a-menu-item>Action 1</a-menu-item>
-                <a-menu-item>Action 2</a-menu-item>
-              </a-menu>
-              <a href="javascript:;">
-                More
-                <a-icon type="down"/>
-              </a>
-            </a-dropdown>
-          </span>
         </a-table>
       </a-table>
     </div>
@@ -60,8 +43,6 @@ const columns = [
     }
   },
   { title: "权限标识", dataIndex: "permMark", key: "permMark" },
-  { title: "创建时间", dataIndex: "createTime", key: "createTime" },
-  { title: "最近修改时间", dataIndex: "updateTime", key: "updateTime" },
   {
     title: "是否需要权限",
     dataIndex: "needPrem",
@@ -72,24 +53,33 @@ const columns = [
   },
   { title: "描述", dataIndex: "description", key: "description" }
 ];
+
 export default {
   components: {},
   data() {
     return {
       data: [],
-      pagination: { showTotal: this.showTotal },
-      columns
+      columns,
+      loading: false,
     };
   },
   methods: {
-    showTotal(total) {
-      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    listResource() {
+      this.loading = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/resource/list", {})
+        .then(response => {
+          this.loading = false;
+          this.data = response.data.data;
+        });
     },
-    rowExpand(e) {
-          console.log("expand");
-          console.log("你搞笑啊" + e);
-      }
-  }
+    expandFunc(expand, record) {
+      console.log(expand, record);
+    }
+  },
+  mounted() {
+    this.listResource();
+  },
 };
 </script>
 

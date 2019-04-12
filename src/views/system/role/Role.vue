@@ -88,17 +88,51 @@
           </div>
         </template>
       </div>
+      <a-modal
+        :width="'680px'"
+        :title="'角色赋权'"
+        :maskClosable="false"
+        v-model="empowerVisible"
+        :cancelText="'取消'"
+        :okText="'确认'"
+        :bodyStyle="{textAlign:'center'}"
+      >
+        <template>
+          <a-transfer
+            :dataSource="unSelectedList"
+            showSearch
+            :listStyle="{
+                width: '250px',
+                height: '300px',
+              }"
+            :locale="{ itemUnit: '项', itemsUnit: '项', notFoundContent: '列表为空', searchPlaceholder: '请输入搜索内容' }"  
+            :filterOption="filterOption"
+            :targetKeys="targetKeys"
+            @change="handleChange"
+            @search="handleSearch"
+            :render="item=>item.title"
+          >
+          </a-transfer>
+        </template>
+      </a-modal>
       <a-table
         :columns="columns"
         :dataSource="data"
         :pagination="pagination"
         :scroll="{ x: 1300}"
         :rowKey="record => record.id"
+        @change="searchRoleByParams"
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
             <a @click="modifyRole(record.id)">
               <a-icon type="edit"/>修改
+            </a>
+          </span>
+          <a-divider type="vertical"/>
+          <span>
+            <a @click="empower(record.id)">
+              <a-icon type="link" />赋权
             </a>
           </span>
           <a-divider type="vertical"/>
@@ -113,12 +147,12 @@
   </a-layout-content>
 </template>
 <script>
-// import lodash from "lodash";
-// const pageInit = { page: 1, pageSize: 10 };
+import lodash from "lodash";
+const pageInit = { page: 1, pageSize: 10 };
 
 const columns = [
   { title: "名称", dataIndex: "name", key: "name" },
-  { title: "编码", dataIndex: "code", key: "code"},
+  { title: "编码", dataIndex: "code", key: "code" },
   { title: "创建时间", dataIndex: "createTime", key: "createTime" },
   { title: "最近修改时间", dataIndex: "updateTime", key: "updateTime" },
   { title: "描述", dataIndex: "description", key: "description" },
@@ -126,7 +160,7 @@ const columns = [
     title: "操作",
     key: "operator",
     fixed: "right",
-    width: 150,
+    width: 230,
     scopedSlots: { customRender: "action" }
   }
 ];
@@ -139,30 +173,141 @@ export default {
       pagination: { showTotal: this.showTotal },
       loading: false,
       columns,
+      id: 0,
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       search: this.$form.createForm(this),
-      isUpdate: false
+      isUpdate: false,
+      unSelectedList: [],
+      targetKeys: [],
+      empowerVisible: false
     };
   },
   methods: {
-      resetSearch() {
-
-      },
-      searchFunc(e) {
-         e.preventDefault();
-      },
-      showTotal(total) {
-        return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
-      },
-      show() {
-        this.visible = true;
-        this.isUpdate = false;
-        this.form.resetFields();
-      },
-      handleSubmit(e) {
-        e.preventDefault();
+    listRoles(params = {}) {
+      this.loading = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/role/list", params)
+        .then(response => {
+          const pagination = { ...this.pagination };
+          pagination.total = response.data.data.totalCount;
+          pagination.pageSize = response.data.data.size;
+          pagination.current = response.data.data.current;
+          this.loading = false;
+          this.data = response.data.data.data;
+          this.pagination = pagination;
+        });
+    },
+    resetSearch() {
+      this.listRoles({ page: pageInit });
+      this.search.resetFields();
+    },
+    searchFunc(e) {
+      e.preventDefault();
+      this.search.validateFields((_, values) => {
+        this.listRoles({ page: pageInit, ...values });
+      });
+    },
+    searchRoleByParams(pagination) {
+      var values = this.search.getFieldsValue();
+      const pager = { ...this.pagination };
+      pager.current = pagination.current;
+      this.pagination = pager;
+      this.listRoles({
+        page: {
+          pageSize: pagination.pageSize,
+          page: pagination.current
+        },
+        ...values
+      });
+    },
+    modifyRole(id) {
+      this.isUpdate = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/role/info", { id: id })
+        .then(response => {
+          this.visible = true;
+          var data = response.data.data;
+          this.id = data.id;
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
+        })
+        .catch(() => {
+          alert("修改角色失败");
+        });
+    },
+    showTotal(total) {
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    },
+    show() {
+      this.visible = true;
+      this.isUpdate = false;
+      this.form.resetFields();
+    },
+    handleSubmit(e) {
+      e.preventDefault();
+      this.form.validateFields((err, values) => {
+        if (!err) {
+          var url = this.CONFIG.apiUrl + "/role/add";
+          if (this.isUpdate) {
+            values["id"] = this.id;
+            this.visible = false;
+            url = this.CONFIG.apiUrl + "/role/update";
+          }
+          this.axios
+            .post(url, values)
+            .then(response => {
+              alert(response.data.message);
+              if(response.data.code == 1) {
+                return;
+              }
+              this.visible = false;
+              this.listRoles({
+                page: pageInit
+              });
+            })
+            .catch(() => {
+              alert("角色操作失败");
+            });
+        }
+      });
+    },
+    deleteRole(id) {
+      if (confirm("确认删除此角色吗?")) {
+        this.axios
+          .post(this.CONFIG.apiUrl + "/role/delete", { id: id })
+          .then(response => {
+            alert(response.data.message);
+            this.listRoles({
+              page: pageInit
+            });
+          })
+          .catch(error => {
+            console.log(error);
+            alert("删除角色失败");
+          });
       }
+    },
+    empower(id) {
+      // 赋权
+      this.empowerVisible = true;
+    },
+    filterOption(inputValue, option) {
+      return option.description.indexOf(inputValue) > -1;
+    },
+    handleChange(targetKeys, direction, moveKeys) {
+      console.log(targetKeys, direction, moveKeys);
+      this.targetKeys = targetKeys
+    },
+    handleSearch (dir, value) {
+      console.log('search:', dir, value);
+    },
+  },
+  mounted() {
+    this.listRoles({page: pageInit});
   }
 };
 </script>

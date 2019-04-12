@@ -250,7 +250,6 @@ const columns = [
   }
 ];
 import UserInfo from "./UserInfo"
-import { error } from 'util';
 export default {
   components: {
     UserInfo
@@ -295,7 +294,7 @@ export default {
              alert(response.data.message);
              this.$router.push("/user");
              return;
-         }).catch((error) => {
+         }).catch(() => {
             alert("续订失败,errorCode=1");
          });
        });
