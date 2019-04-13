@@ -335,6 +335,9 @@ export default {
         .post(this.CONFIG.apiUrl + "/manager/update", values)
         .then(response => {
           alert(response.data.message);
+          if(response.data.code == 1) {
+                return;
+          }
           this.fetchManager({
             page: pageInit
           });
@@ -364,6 +367,9 @@ export default {
             .post(this.CONFIG.apiUrl + "/manager/add", values)
             .then(response => {
               alert(response.data.message);
+              if(response.data.code == 1) {
+                return;
+              }
               this.visible = false;
               this.fetchManager({
                 page: pageInit

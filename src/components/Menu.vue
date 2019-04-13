@@ -6,54 +6,25 @@
         <span class="title-name" @click="$router.push('/index')">{{systemName}}</span>
       </div>
       <a-menu theme="dark" mode="inline" :openKeys.sync="subKeys" :defaultSelectedKeys="itemKeys" @click="doChange">
-        <a-menu-item key="user">
-          <a @click="$router.push('/user')">
-            <a-icon type="team" />
-            <span>用户管理</span>
+        <template v-for="m in menus">
+        <a-menu-item v-if="isAmenu(m)" :key="m.frontKey">
+          <a @click="$router.push(m.frontRouter)">
+            <a-icon :type="m.icon" />
+            <span>{{m.name}}</span>
           </a>
         </a-menu-item>
-        <a-menu-item key="product">
-          <a @click="$router.push('/product')">
-          <a-icon type="shopping" />
-          <span>套餐管理</span>
-          </a>
-        </a-menu-item>
-        <a-menu-item key="online">
-          <a @click="$router.push('/online')">
-          <a-icon type="global" />
-          <span>在线用户</span>
-          </a>
-        </a-menu-item>
-        <a-sub-menu 
-          key="system"
+        
+        <a-sub-menu v-if="isBmenu(m)"
+          :key="m.frontKey"
         >
-          <span slot="title"><a-icon type="setting" /><span>系统设置</span></span>
-          <a-menu-item key="manager">
-            <a @click="$router.push('/system/manager')">
-            <a-icon type="user" />管理员
-            </a>
-          </a-menu-item>
-          <a-menu-item key="nas">
-            <a @click="$router.push('/system/nas')">
-            <a-icon type="database" />NAS管理
-            </a>
-          </a-menu-item>
-          <a-menu-item key="department">
-            <a @click="$router.push('/system/department')">
-            <a-icon type="appstore" />部门管理
-            </a>
-          </a-menu-item>
-          <a-menu-item key="role">
-            <a @click="$router.push('/system/role')">
-            <a-icon type="solution" />角色管理
-            </a>
-          </a-menu-item>
-          <a-menu-item key="menu">
-            <a @click="$router.push('/system/resource')">
-            <a-icon type="profile" />菜单管理
+          <span slot="title"><a-icon :type="m.icon" /><span>{{m.name}}</span></span>
+          <a-menu-item v-for="c in m.children" :key="c.frontKey">
+            <a @click="$router.push(c.frontRouter)">
+            <a-icon :type="c.icon" />{{c.name}}
             </a>
           </a-menu-item>
         </a-sub-menu>
+        </template>
       </a-menu>
     </a-layout-sider>
 </template>
@@ -66,7 +37,8 @@ export default {
       collapsed: false,
       itemKeys: [],
       subKeys: [],
-      systemName: "Radius管理系统"
+      systemName: "Radius管理系统",
+      menus:[]
     }
   },
   watch: {
@@ -85,7 +57,21 @@ export default {
       } else {
         this.subKeys = []
       }
+    },
+    buildMenu() {
+      this.axios.post(this.CONFIG.apiUrl + "/session/resource", {}).then(response => {
+          this.menus = response.data.data;
+      });
+    },
+    isAmenu(menu) {
+       return menu.children.length == 0 || menu.children[0].level == 3;
+    },
+    isBmenu(menu) {
+       return menu.children.length > 0 && menu.children[0].level != 3;
     }
+  },
+  mounted() {
+    this.buildMenu();
   },
   created() {
     this.doChange();

@@ -182,6 +182,9 @@ export default {
             .then(response => {
               alert(response.data.message);
               this.$router.push("/user");
+              if(response.data.code == 1) {
+                return;
+              }
             })
             .catch(() => {});
         }

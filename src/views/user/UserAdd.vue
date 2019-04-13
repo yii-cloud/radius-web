@@ -168,6 +168,9 @@ export default {
             .post(this.CONFIG.apiUrl + "/user/add", values)
             .then(response => {
               alert(response.data.message);
+              if(response.data.code == 1) {
+                return;
+              }
               this.$router.push("/user");
             })
             .catch(() => {});

@@ -19,14 +19,15 @@ axiosHttp.interceptors.response.use((response) => {
 }, (error) => {
     // 对响应错误做点什么
     if (error.response.status === 401) {
+        alert("登陆超时，请重新登陆!");
         router.push("/");
         localStorage.removeItem("rad_access_token");
-        return Promise.reject(error);
     }
     if (error.response.status === 403) {
         alert("权限不足不允许操作!");
     }
-    return Promise.reject(error);
+    axios.CancelToken.source().cancel();
+    return new Promise(() => {});
 });
 
 export default axiosHttp;

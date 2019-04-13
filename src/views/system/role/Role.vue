@@ -89,30 +89,28 @@
         </template>
       </div>
       <a-modal
-        :width="'680px'"
+        :width="'500px'"
         :title="'角色赋权'"
+        style="top: 10px;"
         :maskClosable="false"
         v-model="empowerVisible"
         :cancelText="'取消'"
         :okText="'确认'"
-        :bodyStyle="{textAlign:'center'}"
+        @ok="okFunc"
+        :bodyStyle="{overflowY: 'scroll',
+                      height: '500px'}"
       >
         <template>
-          <a-transfer
-            :dataSource="unSelectedList"
-            showSearch
-            :listStyle="{
-                width: '250px',
-                height: '300px',
-              }"
-            :locale="{ itemUnit: '项', itemsUnit: '项', notFoundContent: '列表为空', searchPlaceholder: '请输入搜索内容' }"  
-            :filterOption="filterOption"
-            :targetKeys="targetKeys"
-            @change="handleChange"
-            @search="handleSearch"
-            :render="item=>item.title"
-          >
-          </a-transfer>
+          <a-tree
+            checkable
+            @expand="onExpand"
+            v-model="defaultCheckedKeyList"
+            :expandedKeys="expandedKeys"
+            :checkStrictly=true
+            :showLine=true
+            :treeData="treeData"
+            @check="checkFunc"
+          />
         </template>
       </a-modal>
       <a-table
@@ -132,7 +130,7 @@
           <a-divider type="vertical"/>
           <span>
             <a @click="empower(record.id)">
-              <a-icon type="link" />赋权
+              <a-icon type="link"/>赋权
             </a>
           </span>
           <a-divider type="vertical"/>
@@ -178,9 +176,13 @@ export default {
       form: this.$form.createForm(this),
       search: this.$form.createForm(this),
       isUpdate: false,
-      unSelectedList: [],
-      targetKeys: [],
-      empowerVisible: false
+      expandedKeys: [],
+      checkedKeys: [],
+      defaultCheckedKeyList:[],
+      treeData: [],
+      empowerVisible: false,
+      resources: new Map(),
+      currentRoleId: 0,
     };
   },
   methods: {
@@ -261,7 +263,7 @@ export default {
             .post(url, values)
             .then(response => {
               alert(response.data.message);
-              if(response.data.code == 1) {
+              if (response.data.code == 1) {
                 return;
               }
               this.visible = false;
@@ -292,23 +294,105 @@ export default {
       }
     },
     empower(id) {
-      // 赋权
+      this.defaultCheckedKeyList = [];
+      this.treeData = [];
       this.empowerVisible = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/role/resources", { id: id })
+        .then(response => {
+          var resList = response.data.data;
+          resList.forEach(element => {
+            var result = {};
+            this.buildTreeData(element, result);
+            this.treeData.push(result);
+          });
+          this.currentRoleId = id;
+        });
     },
-    filterOption(inputValue, option) {
-      return option.description.indexOf(inputValue) > -1;
+    onExpand(expandedKeys) {
+      this.expandedKeys = expandedKeys;
+      this.autoExpandParent = false;
     },
-    handleChange(targetKeys, direction, moveKeys) {
-      console.log(targetKeys, direction, moveKeys);
-      this.targetKeys = targetKeys
+    buildTreeData(res, item = {}) {
+      this.resources[res.id] = res.parentId;
+      if (res.selected) {
+        this.defaultCheckedKeyList.push(res.id);
+        this.checkedKeys.push(res.id);
+      }
+      item.children = [];
+      item.key = res.id;
+      item.title = res.name;
+      res.children.forEach(element => {
+        this.resources[element.id] = element.parentId;
+        var c = { key: element.id, title: element.name };
+        c.parent = res.id;
+        item.children.push(c);
+        this.buildTreeData(element, c);
+      });
     },
-    handleSearch (dir, value) {
-      console.log('search:', dir, value);
+    checkFunc(_, info) {
+      var dataInfo = info.node.$vnode.data.props.dataRef;
+      var checked = info.checked;
+      this.doCheck(dataInfo, checked);
     },
+    selectParent(key) {
+      var parent = this.resources[key];
+      if(parent != undefined && parent != 0) {
+        this.checkedKeys.push(parent);
+        this.defaultCheckedKeyList.checked.push(parent);
+        this.selectParent(parent);
+      }
+    },
+    doCheck(dataInfo, checked) {
+      if(checked) {
+          this.checkedKeys.push(dataInfo.key);
+          this.defaultCheckedKeyList.checked.push(dataInfo.key);
+          // 选中父节点
+          this.selectParent(dataInfo.key);
+          dataInfo.children.forEach(e => {
+              this.checkedKeys.push(e.key);
+              this.defaultCheckedKeyList.checked.push(e.key);
+              this.doCheck(e, true);
+          });
+      } else {
+        // 子项全部取消选择
+        this.checkedKeys = this.removeArrayItem(this.checkedKeys, dataInfo.key);
+        dataInfo.children.forEach(e => {
+          this.checkedKeys = this.removeArrayItem(this.checkedKeys, e.key);
+          this.defaultCheckedKeyList.checked = this.removeArrayItem(this.defaultCheckedKeyList.checked, e.key);
+          this.doCheck(e, false);
+        });
+        this.defaultCheckedKeyList.checked = this.removeArrayItem(this.defaultCheckedKeyList.checked, dataInfo.key);
+      }
+      this.checkedKeys = [...(new Set(this.checkedKeys))];
+      this.defaultCheckedKeyList.checked = [...(new Set(this.defaultCheckedKeyList.checked))];
+    },
+    removeArrayItem(arr, value) {
+      if(arr == null || arr.length == 0) {
+        return arr;
+      }
+      var index = arr.indexOf(value);
+      if(index == -1) {
+        return arr;
+      }
+      return [...arr.slice(0, index), ...arr.slice(index+1)];
+    },
+    okFunc() {
+      var values = [];
+      this.checkedKeys.forEach(val => {
+        values.push({roleId: this.currentRoleId, resourceId: val});
+      });
+      this.axios.post(this.CONFIG.apiUrl + "/role/empower/" + this.currentRoleId, values)
+        .then(response => {
+          alert(response.data.message);
+          this.empowerVisible = false;
+        });
+    }
   },
   mounted() {
-    this.listRoles({page: pageInit});
-  }
+    this.listRoles({ page: pageInit });
+  },
+  
 };
 </script>
 
