@@ -294,8 +294,8 @@ export default {
              alert(response.data.message);
              this.$router.push("/user");
              return;
-         }).catch(() => {
-            alert("续订失败,errorCode=1");
+         }).catch((error) => {
+            console.log(error);
          });
        });
     },
@@ -353,7 +353,7 @@ export default {
             });
           })
           .catch(error => {
-            alert("删除用户失败: " + error.response.data.message);
+            console.log(error);
           });
       }
     },
@@ -421,8 +421,8 @@ export default {
                 page: pageInit
               });
             })
-            .catch(() => {
-              alert("添加用户失败");
+            .catch((error) => {
+              console.log(error);
             });
         }
       });

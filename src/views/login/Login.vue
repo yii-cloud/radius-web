@@ -63,6 +63,12 @@ export default {
             return;
         });
     }
+  },
+  mounted() {
+    var msg = this.$route.query.reason;
+    if(msg.length != 0) {
+      alert(msg);
+    }
   }
 };
 </script>
