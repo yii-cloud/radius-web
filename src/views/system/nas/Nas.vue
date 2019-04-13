@@ -273,8 +273,8 @@ export default {
             );
           });
         })
-        .catch(() => {
-          alert("修改Nas失败");
+        .catch((error) => {
+          console.log(error);
         });
     },
     handleSubmit(e) {
@@ -299,8 +299,8 @@ export default {
                 page: pageInit
               });
             })
-            .catch(() => {
-              alert("NAS操作失败");
+            .catch((error) => {
+              console.log(error);
             });
         }
       });
@@ -317,7 +317,6 @@ export default {
           })
           .catch(error => {
             console.log(error);
-            alert("删除NAS失败");
           });
       }
     }

@@ -281,8 +281,8 @@ export default {
             );
           });
         })
-        .catch(() => {
-          alert("修改管理员失败");
+        .catch((error) => {
+          console.log(error);
         });
     },
     deleteManager(id) {
@@ -375,8 +375,8 @@ export default {
                 page: pageInit
               });
             })
-            .catch(() => {
-              alert("添加管理员失败");
+            .catch((error) => {
+              console.log(error);
             });
         }
       });

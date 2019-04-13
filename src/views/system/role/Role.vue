@@ -237,8 +237,8 @@ export default {
             );
           });
         })
-        .catch(() => {
-          alert("修改角色失败");
+        .catch((error) => {
+          console.log(error);
         });
     },
     showTotal(total) {
@@ -271,8 +271,8 @@ export default {
                 page: pageInit
               });
             })
-            .catch(() => {
-              alert("角色操作失败");
+            .catch((error) => {
+              console.log(error);
             });
         }
       });
@@ -289,7 +289,6 @@ export default {
           })
           .catch(error => {
             console.log(error);
-            alert("删除角色失败");
           });
       }
     },
