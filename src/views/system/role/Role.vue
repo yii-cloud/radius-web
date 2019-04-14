@@ -56,7 +56,7 @@
               <template>
                 <a-form :form="form" @submit="handleSubmit">
                   <a-form-item label="编码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
+                    <a-input :disabled="isUpdate"
                       v-decorator="[
                                     'code',
                                     {rules: [{ required: true, message: '请输入角色编码!' }]}
@@ -117,7 +117,7 @@
         :columns="columns"
         :dataSource="data"
         :pagination="pagination"
-        :scroll="{ x: 1300}"
+        :scroll="{ x: 960}"
         :rowKey="record => record.id"
         @change="searchRoleByParams"
       >

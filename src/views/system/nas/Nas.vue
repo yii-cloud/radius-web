@@ -144,7 +144,7 @@
         :columns="columns"
         :dataSource="data"
         :pagination="pagination"
-        :scroll="{ x: 1300}"
+        :scroll="{ x: 980}"
         :rowKey="record => record.id"
         @change="searchNasByParams"
       >

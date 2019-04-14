@@ -66,7 +66,7 @@ export default {
   },
   mounted() {
     var msg = this.$route.query.reason;
-    if(msg.length != 0) {
+    if(msg != undefined && msg.length != 0) {
       alert(msg);
     }
   }

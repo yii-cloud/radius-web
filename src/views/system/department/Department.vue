@@ -37,7 +37,7 @@
                                     ]"
                     placeholder="根据上级部门搜索"
                   >
-                  <a-select-option v-for="d in departments" :key="d.id" :value="d.id">{{d.name}}</a-select-option>
+                  <a-select-option v-for="d in departments" :key="d.id" :value="d.id" :disabled = "d.status == 2">{{d.name}}</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -68,7 +68,7 @@
               <template>
                 <a-form :form="form" @submit="handleSubmit">
                   <a-form-item label="编码" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                    <a-input
+                    <a-input :disabled="isUpdate"
                       v-decorator="[
                                     'code',
                                     {rules: [{ required: true, message: '请输入部门编码!' }]}
@@ -90,7 +90,21 @@
                   >
                     <a-select
                       v-decorator="['parentId']" placeholder="选填，选择上级部门!">
-                      <a-select-option v-for="d in departments" :key="d.id" :value="d.id">{{d.name}}</a-select-option>
+                      <a-select-option :value="0">无上级部门</a-select-option>
+                      <template v-for="d in departments">
+                        <a-select-option v-if="id != d.id" :key="d.id" :disabled="d.status == 2" :value="d.id">{{d.name}}</a-select-option>
+                      </template>
+                    </a-select>
+                  </a-form-item>
+                  <a-form-item v-if="isUpdate"
+                    label="状态"
+                    :label-col="{ span: 5 }"
+                    :wrapper-col="{ span: 12 }"
+                  >
+                    <a-select
+                      v-decorator="['status']" placeholder="选择状态!">
+                      <a-select-option :value="1">正常</a-select-option>
+                      <a-select-option :value="2">停用</a-select-option>
                     </a-select>
                   </a-form-item>
                   <a-form-item label="描述信息" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -114,19 +128,19 @@
         :columns="columns"
         :dataSource="data"
         :pagination="pagination"
-        :scroll="{ x: 1300}"
-        :rowKey="record => record.id"
+        :scroll="{ x: 960}"
+        :rowKey="record => record.department.id"
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyDepartment(record.id)">
+            <a @click="modifyDepartment(record.department.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteDepartment(record.id)">
-              <a-icon type="delete"/>删除
+            <a style="color:#da6868" @click="deleteDepartment(record.department.id)">
+              <a-icon type="delete"/>停用
             </a>
           </span>
         </span>
@@ -135,16 +149,21 @@
   </a-layout-content>
 </template>
 <script>
-// import lodash from "lodash";
-// const pageInit = { page: 1, pageSize: 10 };
+import lodash from "lodash";
+const pageInit = { page: 1, pageSize: 10 };
 
 const columns = [
-  { title: "名称", dataIndex: "name", key: "name" },
-  { title: "编码", dataIndex: "code", key: "code"},
-  { title: "上级部门", dataIndex: "parent.name", key: "parent" },
-  { title: "创建时间", dataIndex: "createTime", key: "createTime" },
-  { title: "最近修改时间", dataIndex: "updateTime", key: "updateTime" },
-  { title: "描述", dataIndex: "description", key: "description" },
+  { title: "名称", dataIndex: "department.name", key: "name" },
+  { title: "编码", dataIndex: "department.code", key: "code"},
+  { title: "上级部门", dataIndex: "name", key: "parentName" },
+  { title: "状态", dataIndex: "department.status", key: "status",
+    customRender: text => {
+      return text == 1 ? "正常" : "停用";
+    }
+  },
+  { title: "创建时间", dataIndex: "department.createTime", key: "createTime" },
+  { title: "最近修改时间", dataIndex: "department.updateTime", key: "updateTime" },
+  { title: "描述", dataIndex: "department.description", key: "description" },
   {
     title: "操作",
     key: "operator",
@@ -166,27 +185,129 @@ export default {
       formLayout: "horizontal",
       form: this.$form.createForm(this),
       search: this.$form.createForm(this),
-      isUpdate: false
+      isUpdate: false,
+      id: 0
     };
   },
   methods: {
-      resetSearch() {
-
-      },
-      searchFunc(e) {
-         e.preventDefault();
-      },
-      showTotal(total) {
-        return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
-      },
-      show() {
-        this.visible = true;
-        this.isUpdate = false;
-        this.form.resetFields();
-      },
-      handleSubmit(e) {
-        e.preventDefault();
+    resetSearch() {
+      this.search.resetFields();
+      this.listDepartment({ page: pageInit });
+    },
+    searchFunc(e) {
+      e.preventDefault();
+      this.search.validateFields((_, values) => {
+        this.listDepartment({ page: pageInit, ...values });
+      });
+    },
+    showTotal(total) {
+      return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
+    },
+    show() {
+      this.visible = true;
+      this.isUpdate = false;
+      this.form.resetFields();
+    },
+    listDepartment(params = {}) {
+      this.loading = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/department/list", params)
+        .then(response => {
+          const pagination = { ...this.pagination };
+          pagination.total = response.data.data.totalCount;
+          pagination.pageSize = response.data.data.size;
+          pagination.current = response.data.data.current;
+          this.loading = false;
+          this.data = response.data.data.data;
+          this.pagination = pagination;
+        });
+    },
+    searchDepartmentByParams(pagination) {
+      var values = this.search.getFieldsValue();
+      const pager = { ...this.pagination };
+      pager.current = pagination.current;
+      this.pagination = pager;
+      this.listDepartment({
+        page: {
+          pageSize: pagination.pageSize,
+          page: pagination.current
+        },
+        ...values
+      });
+    },
+    modifyDepartment(id) {
+      this.isUpdate = true;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/department/info", { id: id })
+        .then(response => {
+          this.visible = true;
+          var data = response.data.data;
+          this.id = data.id;
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    handleSubmit(e) {
+      e.preventDefault();
+      this.form.validateFields((err, values) => {
+        if (!err) {
+          var url = this.CONFIG.apiUrl + "/department/add";
+          if (this.isUpdate) {
+            values["id"] = this.id;
+            this.visible = false;
+            url = this.CONFIG.apiUrl + "/department/update";
+          }
+          this.axios
+            .post(url, values)
+            .then(response => {
+              alert(response.data.message);
+              if(response.data.code == 1) {
+                return;
+              }
+              this.visible = false;
+              this.fetchDepartment();
+              this.listDepartment({
+                page: pageInit
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      });
+    },
+    deleteDepartment(id) {
+      if (confirm("确认停用此部门信息吗?")) {
+        this.axios
+          .post(this.CONFIG.apiUrl + "/department/delete", { id: id })
+          .then(response => {
+            alert(response.data.message);
+            this.listDepartment({
+              page: pageInit
+            });
+          })
+          .catch(error => {
+            console.log(error);
+          });
       }
+    },
+    fetchDepartment() {
+      this.axios
+          .post(this.CONFIG.apiUrl + "/fetch/department", {})
+          .then(response => {
+            this.departments = response.data.data;
+          })
+    }
+  },
+  mounted() {
+    this.listDepartment({ page: pageInit });
+    this.fetchDepartment();
   }
 };
 </script>
