@@ -58,6 +58,14 @@ export default new Router({
           component: () => import("./views/product/Product.vue")
         },
         {
+          path: "/product/add",
+          name: "productAdd",
+          meta: {
+            requireAuth: true
+          },
+          component: () => import("./views/product/ProductAdd.vue")
+        },
+        {
           path: "/online",
           name: "online",
           meta: {
