@@ -2,10 +2,10 @@
   <a-layout-content style="margin: 0 16px;">
     <a-breadcrumb style="margin: 16px 0">
       <a-breadcrumb-item>套餐管理</a-breadcrumb-item>
-      <a-breadcrumb-item>添加套餐</a-breadcrumb-item>
+      <a-breadcrumb-item>修改套餐</a-breadcrumb-item>
     </a-breadcrumb>
     <div :class="'content-div'">
-      <a-form :form="form" :style="{width:'800px', margin:'auto auto'}" @submit="handleSubmit">
+      <a-form :form="form" :style="{width:'800px', margin:'auto auto'}" @submit="handleUpdate">
         <a-form-item label="套餐名称" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
@@ -16,8 +16,7 @@
           />
         </a-form-item>
         <a-form-item label="套餐类型" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-select
-            @change="productChanged"
+          <a-select :disabled=true
             v-decorator="[
                 'type',
                 {rules: [{ required: true, message: '请选择套餐类型!' }]}
@@ -63,7 +62,7 @@
           ></a-input>
         </a-form-item>
         <a-form-item
-          v-if="isDurationType"
+          v-if="type == 2"
           label="套餐时长(小时)"
           :label-col="{ span: 5 }"
           :wrapper-col="{ span: 12 }"
@@ -77,7 +76,7 @@
           ></a-input>
         </a-form-item>
         <a-form-item
-          v-if="isMonthType"
+          v-if="type == 1"
           label="套餐包月数"
           :label-col="{ span: 5 }"
           :wrapper-col="{ span: 12 }"
@@ -91,7 +90,7 @@
           ></a-input>
         </a-form-item>
         <a-form-item
-          v-if="isFlowType"
+          v-if="type == 3"
           label="套餐流量(M)"
           :label-col="{ span: 5 }"
           :wrapper-col="{ span: 12 }"
@@ -111,7 +110,7 @@
               <a-icon type="question-circle-o"/>
             </a-tooltip>
           </span>
-          <a-select
+          <a-select :disabled=true
             v-decorator="[
           'flowClearCycle',
           {rules: [{ required: true, message: '流量清零周期' }]}
@@ -174,51 +173,65 @@
 </template>
 
 <script>
+import lodash from "lodash";
 export default {
   data() {
     return {
-      isMonthType: false,
-      isDurationType: false,
-      isFlowType: false,
       formLayout: "horizontal",
-      form: this.$form.createForm(this)
+      form: this.$form.createForm(this),
+      type: 0,
+      id: 0,
     };
   },
   methods: {
-    productChanged(value) {
-        if(value == 1) {
-          this.isMonthType = true;
-          this.isDurationType = false;
-          this.isFlowType = false;
-        } else if(value == 2) {
-          this.isMonthType = false;
-          this.isDurationType = true;
-          this.isFlowType = false;
-        } else if(value == 3) {
-          this.isMonthType = false;
-          this.isDurationType = false;
-          this.isFlowType = true;
-        }
+    modifyProduct(id) {
+      this.axios
+        .post(this.CONFIG.apiUrl + "/product/info", { id: id })
+        .then(response => {
+          this.visible = true;
+          var data = response.data.data;
+          this.type = data.type;
+          this.id = data.id;
+          data.productFlow = data.productFlow / 1024.0;
+          data.productDuration = data.productDuration / 60;
+          data.upStreamLimit = data.upStreamLimit / 1024.0;
+          data.downStreamLimit = data.downStreamLimit / 1024.0;
+          data.price = data.price / 100.0;
+          this.$nextTick(() => {
+            this.form.setFieldsValue(
+              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
+            );
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
-    handleSubmit(e) {
+    handleUpdate(e) {
       e.preventDefault();
       this.form.validateFields((err, values) => {
-        if (!err) {
-          this.axios
-            .post(this.CONFIG.apiUrl + "/product/add", values)
-            .then(response => {
-              alert(response.data.message);
-              if (response.data.code == 1) {
+        values.id = this.id;
+        values.productFlow = values.productFlow * 1024;
+        values.productDuration = values.productDuration * 60;
+        values.upStreamLimit = values.upStreamLimit * 1024;
+        values.downStreamLimit = values.downStreamLimit * 1024;
+        values.price = values.price * 100.0;
+      this.axios
+        .post(this.CONFIG.apiUrl + "/product/update", values)
+        .then(response => {
+          alert(response.data.message);
+          if(response.data.code == 1) {
                 return;
-              }
-              this.$router.push("/product/list");
-            })
-            .catch(error => {
-              console.log(error);
-            });
-        }
+          }
+          this.$router.push("/product/list");
+          this.id = 0;
+        });
       });
     }
+  },
+  mounted() {
+    var id = this.$route.query.id;
+    this.modifyProduct(parseInt(id));
   }
-};
+}
 </script>

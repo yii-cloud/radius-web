@@ -66,6 +66,14 @@ export default new Router({
           component: () => import("./views/product/ProductAdd.vue")
         },
         {
+          path: "/product/modify",
+          name: "productModify",
+          meta: {
+            requireAuth: true
+          },
+          component: () => import("./views/product/ProductModify.vue")
+        },
+        {
           path: "/online",
           name: "online",
           meta: {

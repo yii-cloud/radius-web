@@ -23,7 +23,7 @@
                 <a-form-item :label="'类型'">
                   <a-select
                     v-decorator="[
-                                    'status',
+                                    'type',
                                     ]"
                     placeholder="选择类型搜索"
                   >
@@ -61,8 +61,8 @@
       <div style="margin-bottom: 10px">
         <div style="height:39px">
           <div>
-            <a-button type="primary" @click="addUser">
-              <a-icon type="plus"/>添加用户信息
+            <a-button type="primary" @click="addProduct">
+              <a-icon type="plus"/>添加套餐
             </a-button>
           </div>
         </div>
@@ -77,14 +77,14 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyManager(record.id)">
+            <a @click="modifyProduct(record.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteManager(record.id)">
-              <a-icon type="delete"/>删除
+            <a style="color:#da6868" @click="deleteProduct(record.id)">
+              <a-icon type="delete"/>停用
             </a>
           </span>
         </span>
@@ -93,37 +93,65 @@
   </a-layout-content>
 </template>
 <script>
-import lodash from "lodash";
-
 const pageInit = { page: 1, pageSize: 10 };
-
-const managerStatusList = [
+const productStatusList = [
   { key: 1, value: "正常" },
-  { key: 2, value: "禁用" },
-  { key: 3, value: "已删除" }
+  { key: 2, value: "停用" }
 ];
 
-const managerStates = {
+const productStates = {
   1: "正常",
-  2: "禁用",
-  3: "已删除"
+  2: "停用",
+};
+
+const productTypes = {
+  1: "包月",
+  2: "计时",
+  3: "流量"
 };
 
 const columns = [
-  { title: "姓名", dataIndex: "realName", key: "realName" },
-  { title: "用户名", dataIndex: "username", key: "username" },
+  { title: "套餐名", dataIndex: "name", key: "name" },
+  { title: "类型", dataIndex: "type", key: "type",
+    customRender: text => {
+      return productTypes[text];
+    }
+  },
   {
     title: "状态",
     dataIndex: "status",
     key: "status",
     customRender: text => {
-      return managerStates[text];
+      return productStates[text];
     }
   },
-  { title: "手机号码", dataIndex: "mobile", key: "mobile" },
-  { title: "电子邮件", dataIndex: "email", key: "email" },
-  { title: "创建时间", dataIndex: "createTime", key: "createTime" },
-  { title: "描述", dataIndex: "description", key: "description" },
+  {
+    title: "绑定MAC",
+    dataIndex: "shouldBindMacAddr",
+    key: "shouldBindMacAddr",
+    customRender: text => {
+      return text == 1 ? '是' : "否";
+    }
+  },
+  {
+    title: "绑定VLAN",
+    dataIndex: "shouldBindVlan",
+    key: "shouldBindVlan",
+    customRender: text => {
+      return text == 1 ? '是' : "否";
+    }
+  },
+  { title: "并发数", dataIndex: "concurrentCount", key: "concurrentCount" },
+  { title: "时长(分钟)", dataIndex: "productDuration", key: "productDuration", 
+    customRender: text => {
+      return text / 60;
+    }
+  },
+  { title: "月数", dataIndex: "serviceMonth", key: "serviceMonth" },
+  { title: "流量(M)", dataIndex: "productFlow", key: "productFlow", customRender: text => text / 1024.0 },
+  { title: "价格(元)", dataIndex: "price", key: "price",customRender: text => text / 100.0 },
+  { title: "上行限速(Mbps)", dataIndex: "upStreamLimit", key: "upStreamLimit", customRender: text => text / 8.0 },
+  { title: "下行限速(Mbps)", dataIndex: "downStreamLimit", key: "downStreamLimit", customRender: text => text / 8.0 },
   {
     title: "操作",
     key: "operator",
@@ -141,65 +169,44 @@ export default {
       pagination: { showTotal: this.showTotal },
       loading: false,
       columns,
-      managerStates,
-      managerStatusList,
+      productStates,
+      productStatusList,
       formLayout: "horizontal",
-      form: this.$form.createForm(this),
       search: this.$form.createForm(this),
-      departments: [],
-      id: 0,
-      isUpdate: false,
     };
   },
   methods: {
     searchFunc(e) {
       e.preventDefault();
       this.search.validateFields((_, values) => {
-        this.fetchManager({ page: pageInit, ...values  });
+        this.listProducts({ page: pageInit, ...values  });
       });
     },
     resetSearch() {
       this.search.resetFields();
-      this.fetchManager({ page: pageInit });
+      this.listProducts({ page: pageInit });
     },
     showTotal(total) {
       return "每页" + this.pagination.pageSize + "条 | 共" + total + "条数据";
     },
-    show() {
-      this.visible = true;
-      this.isUpdate = false;
-      this.form.resetFields();
+    addProduct() {
+      this.$router.push('/product/add');
     },
-    modifyManager(id) {
-      this.isUpdate = true;
-      this.axios
-        .post(this.CONFIG.apiUrl + "/manager/info", { id: id })
-        .then(response => {
-          this.visible = true;
-          var data = response.data.data;
-          this.id = data.id;
-          this.$nextTick(() => {
-            this.form.setFieldsValue(
-              lodash.pick(data, Object.keys(this.form.getFieldsValue()))
-            );
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    modifyProduct(id) {
+        this.$router.push({path:'/product/modify', query:{id: id}});
     },
-    deleteManager(id) {
-      if (confirm("确认删除此管理员信息吗?")) {
+    deleteProduct(id) {
+      if (confirm("确认停用此套餐信息吗?")) {
         this.axios
-          .post(this.CONFIG.apiUrl + "/manager/delete", { id: id })
+          .post(this.CONFIG.apiUrl + "/product/delete", { id: id })
           .then(response => {
             alert(response.data.message);
-            this.fetchManager({
+            this.listManagers({
               page: pageInit
             });
           })
           .catch(error => {
-            alert("删除管理员失败: " + error.response.data.message);
+            alert("删除套餐失败: " + error.response.data.message);
           });
       }
     },
@@ -209,7 +216,7 @@ export default {
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
-      this.fetchManager({
+      this.listProducts({
         page: {
           pageSize: pagination.pageSize,
           page: pagination.current
@@ -217,10 +224,10 @@ export default {
         ...values
       });
     },
-    fetchManager(params = {}) {
+    listProducts(params = {}) {
       this.loading = true;
       this.axios
-        .post(this.CONFIG.apiUrl + "/manager/list", params)
+        .post(this.CONFIG.apiUrl + "/product/list", params)
         .then(response => {
           const pagination = { ...this.pagination };
           pagination.total = response.data.data.totalCount;
@@ -231,63 +238,9 @@ export default {
           this.pagination = pagination;
         });
     },
-    // 修改管理员信息
-    handleUpdate(values) {
-      values["id"] = this.id;
-      this.axios
-        .post(this.CONFIG.apiUrl + "/manager/update", values)
-        .then(response => {
-          alert(response.data.message);
-          if(response.data.code == 1) {
-                return;
-          }
-          this.fetchManager({
-            page: pageInit
-          });
-        });
-      this.id = 0;
-    },
-    getDepartments() {
-      // 获取部门列表
-      this.axios
-        .post(this.CONFIG.apiUrl + "/fetch/department", {})
-        .then(response => {
-          this.departments = response.data.data;
-        });
-    },
-
-    // 表单提交
-    handleSubmit(e) {
-      e.preventDefault();
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          if (this.isUpdate) {
-            this.handleUpdate(values);
-            this.visible = false;
-            return;
-          }
-          this.axios
-            .post(this.CONFIG.apiUrl + "/manager/add", values)
-            .then(response => {
-              alert(response.data.message);
-              if(response.data.code == 1) {
-                return;
-              }
-              this.visible = false;
-              this.fetchManager({
-                page: pageInit
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      });
-    }
   },
   mounted() {
-    this.fetchManager({ page: pageInit });
-    this.getDepartments();
+    this.listProducts({ page: pageInit });
   }
 };
 </script>

@@ -21,7 +21,7 @@
             placeholder="请输入密码"
             v-decorator="[
                           'password',
-                          {rules: [{ required: true, message: '请输入密码!' }]}
+                          {rules: [{message: '请输入密码!', min: 6 }]}
                           ]"
           />
         </a-form-item>
@@ -192,7 +192,7 @@ export default {
         this.expire = null;
       }
     },
-    countChanged(e) {
+    countChanged() {
       var countStr = this.form.getFieldValue("count")
       if (this.productServiceMonth == 0 || isNaN(countStr) || countStr == '0') {
         this.expire = null;
