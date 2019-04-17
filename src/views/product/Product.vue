@@ -61,7 +61,7 @@
       <div style="margin-bottom: 10px">
         <div style="height:39px">
           <div>
-            <a-button type="primary" @click="addProduct">
+            <a-button v-if="$store.getters.getButtonIds.indexOf(210) != -1" type="primary" @click="addProduct">
               <a-icon type="plus"/>添加套餐
             </a-button>
           </div>
@@ -77,13 +77,13 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyProduct(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(230) != -1" @click="modifyProduct(record.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteProduct(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(240) != -1" style="color:#da6868" @click="deleteProduct(record.id)">
               <a-icon type="delete"/>停用
             </a>
           </span>
@@ -150,8 +150,8 @@ const columns = [
   { title: "月数", dataIndex: "serviceMonth", key: "serviceMonth" },
   { title: "流量(M)", dataIndex: "productFlow", key: "productFlow", customRender: text => text / 1024.0 },
   { title: "价格(元)", dataIndex: "price", key: "price",customRender: text => text / 100.0 },
-  { title: "上行限速(Mbps)", dataIndex: "upStreamLimit", key: "upStreamLimit", customRender: text => text / 8.0 },
-  { title: "下行限速(Mbps)", dataIndex: "downStreamLimit", key: "downStreamLimit", customRender: text => text / 8.0 },
+  { title: "上行限速(Mbps)", dataIndex: "upStreamLimit", key: "upStreamLimit"},
+  { title: "下行限速(Mbps)", dataIndex: "downStreamLimit", key: "downStreamLimit"},
   {
     title: "操作",
     key: "operator",
@@ -201,12 +201,12 @@ export default {
           .post(this.CONFIG.apiUrl + "/product/delete", { id: id })
           .then(response => {
             alert(response.data.message);
-            this.listManagers({
+            this.listProducts({
               page: pageInit
             });
           })
           .catch(error => {
-            alert("删除套餐失败: " + error.response.data.message);
+            console.log("删除套餐失败", error);
           });
       }
     },

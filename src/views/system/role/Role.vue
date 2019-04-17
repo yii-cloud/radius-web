@@ -44,7 +44,7 @@
       <div style="height:39px">
         <template>
           <div>
-            <a-button type="primary" @click="show()">
+            <a-button v-if="$store.getters.getButtonIds.indexOf(441) != -1" type="primary" @click="show()">
               <a-icon type="plus"/>添加角色信息
             </a-button>
             <a-modal
@@ -123,19 +123,19 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyRole(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(443) != -1" @click="modifyRole(record.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a @click="empower(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(445) != -1" @click="empower(record.id)">
               <a-icon type="link"/>赋权
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteRole(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(444) != -1" style="color:#da6868" @click="deleteRole(record.id)">
               <a-icon type="delete"/>删除
             </a>
           </span>

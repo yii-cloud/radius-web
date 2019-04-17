@@ -57,7 +57,8 @@ export default {
               alert(resultData.message);
               return;
             }
-            localStorage.setItem("rad_access_token", resultData.data);
+            this.$store.commit("setButtionIds", resultData.data.buttons);
+            localStorage.setItem("rad_access_token", resultData.data.sessionId);
             this.$router.push("/index");
         }).catch(function() {
             return;

@@ -60,7 +60,7 @@
       <div style="height:39px">
         <template>
           <div>
-            <a-button type="primary" @click="show()">
+            <a-button v-if="$store.getters.getButtonIds.indexOf(411) != -1" type="primary" @click="show()">
               <a-icon type="plus"/>添加管理员信息
             </a-button>
             <a-modal
@@ -174,13 +174,13 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyManager(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(412) != -1" @click="modifyManager(record.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteManager(record.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(413) != -1" style="color:#da6868" @click="deleteManager(record.id)">
               <a-icon type="delete"/>删除
             </a>
           </span>

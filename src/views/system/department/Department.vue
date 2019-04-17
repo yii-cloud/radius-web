@@ -56,7 +56,7 @@
       <div style="height:39px">
         <template>
           <div>
-            <a-button type="primary" @click="show()">
+            <a-button v-if="$store.getters.getButtonIds.indexOf(431) != -1" type="primary" @click="show()">
               <a-icon type="plus"/>添加部门信息
             </a-button>
             <a-modal
@@ -133,13 +133,13 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a @click="modifyDepartment(record.department.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(432) != -1" @click="modifyDepartment(record.department.id)">
               <a-icon type="edit"/>修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteDepartment(record.department.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(433) != -1" style="color:#da6868" @click="deleteDepartment(record.department.id)">
               <a-icon type="delete"/>停用
             </a>
           </span>

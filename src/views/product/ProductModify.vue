@@ -55,11 +55,23 @@
         <a-form-item label="并发数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
-          'concurrentCount', { initialValue: 0 },
-          {rules: [{ required: true, message: '并发数!', type: 'integer' }]}
+          'concurrentCount',
+          {rules: [{ required: true, message: '并发数必须是整数', validator:validInteger}]}
         ]"
             placeholder="并发数"
           ></a-input>
+        </a-form-item>
+        <a-form-item label="状态" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-select
+            v-decorator="[
+          'status',
+          {rules: [{ required: true, message: '请选择状态' }]}
+        ]"
+            placeholder="请选择状态"
+          >
+            <a-select-option :value="1">是</a-select-option>
+            <a-select-option :value="2">否</a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item
           v-if="type == 2"
@@ -70,7 +82,7 @@
           <a-input
             v-decorator="[
           'productDuration',
-          {rules: [{message: '套餐时长!', type: 'number' }]}
+          {rules: [{message: '套餐时长!',required: true, validator:validInteger }]}
         ]"
             placeholder="套餐时长"
           ></a-input>
@@ -84,7 +96,7 @@
           <a-input
             v-decorator="[
           'serviceMonth',
-          {rules: [{message: '套餐包月数!', type: 'integer' }]}
+          {rules: [{message: '套餐包月数!', required:true, validator:validInteger }]}
         ]"
             placeholder="套餐包月数"
           ></a-input>
@@ -98,7 +110,7 @@
           <a-input
             v-decorator="[
           'productFlow',
-          {rules: [{message: '套餐流量!', type: 'number' }]}
+          {rules: [{message: '套餐流量,整数',required: true, validator:validInteger }]}
         ]"
             placeholder="套餐流量"
           ></a-input>
@@ -127,27 +139,27 @@
           <a-input
             v-decorator="[
           'price',
-          {rules: [{message: '价格(单位:元)', type: 'number' }]}
+          {rules: [{message: '价格(单位:元),至多两位小数',required: true, validator:validYuan }]}
         ]"
             placeholder="价格(单位:元)"
           ></a-input>
         </a-form-item>
-        <a-form-item label="上行限速" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item label="上行限速(Mbps)" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
           'upStreamLimit',
-          {rules: [{message: '上行限速', type: 'number' }]}
+          {rules: [{message: '上行限速(Mbps)，数字',required: true, validator:validFloat }]}
         ]"
-            placeholder="上行限速"
+            placeholder="上行限速(Mbps)"
           ></a-input>
         </a-form-item>
-        <a-form-item label="下行限速" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item label="下行限速(Mbps)" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
           'downStreamLimit',
-          {rules: [{message: '下行限速', type: 'number' }]}
+          {rules: [{message: '下行限速(Mbps),数字',required: true, validator:validFloat }]}
         ]"
-            placeholder="下行限速"
+            placeholder="下行限速(Mbps)"
           ></a-input>
         </a-form-item>
         <a-form-item label="用户域" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -174,6 +186,9 @@
 
 <script>
 import lodash from "lodash";
+const numberReg = /^\d+$/;
+const floatReg = /^\d+\.?\d*$/;
+const yuanReg = /^\d+\.?\d{0,2}$/;
 export default {
   data() {
     return {
@@ -184,6 +199,27 @@ export default {
     };
   },
   methods: {
+    validInteger(_, value, callback) {
+      if(!numberReg.test(value)) {
+        callback("必须是整数");
+        return;
+      }
+       callback();
+    },
+    validFloat(_, value, callback) {
+      if(!floatReg.test(value)) {
+        callback("必须是数字");
+        return;
+      }
+       callback();
+    },
+    validYuan(_, value, callback) {
+      if(!yuanReg.test(value)) {
+        callback("至多两位小数");
+        return;
+      }
+       callback();
+    },
     modifyProduct(id) {
       this.axios
         .post(this.CONFIG.apiUrl + "/product/info", { id: id })
@@ -194,8 +230,6 @@ export default {
           this.id = data.id;
           data.productFlow = data.productFlow / 1024.0;
           data.productDuration = data.productDuration / 60;
-          data.upStreamLimit = data.upStreamLimit / 1024.0;
-          data.downStreamLimit = data.downStreamLimit / 1024.0;
           data.price = data.price / 100.0;
           this.$nextTick(() => {
             this.form.setFieldsValue(
@@ -211,11 +245,14 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         values.id = this.id;
-        values.productFlow = values.productFlow * 1024;
-        values.productDuration = values.productDuration * 60;
-        values.upStreamLimit = values.upStreamLimit * 1024;
-        values.downStreamLimit = values.downStreamLimit * 1024;
-        values.price = values.price * 100.0;
+        values.concurrentCount = parseInt(values.concurrentCount);
+        values.productDuration = parseInt(values.productDuration) * 60;
+        values.serviceMonth = parseInt(values.serviceMonth);
+        values.productFlow = parseInt(values.productFlow) * 1024;
+        values.price = parseInt(values.price) * 100;
+        values.upStreamLimit = parseInt(values.upStreamLimit);
+        values.downStreamLimit = parseInt(values.downStreamLimit);
+        
       this.axios
         .post(this.CONFIG.apiUrl + "/product/update", values)
         .then(response => {
@@ -223,7 +260,7 @@ export default {
           if(response.data.code == 1) {
                 return;
           }
-          this.$router.push("/product/list");
+          this.$router.push("/product");
           this.id = 0;
         });
       });

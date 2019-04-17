@@ -33,8 +33,9 @@ export default {
       this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {
 
       }).then(response => {
-            this.realName = response.data.data.realName;
-        }).catch(() => { 
+            this.realName = response.data.data.manager.realName;
+            this.$store.commit("setButtionIds", response.data.data.buttons);
+        }).catch(() => {
             
         });
     },

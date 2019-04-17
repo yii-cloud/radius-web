@@ -56,8 +56,8 @@
         <a-form-item label="并发数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
-          'concurrentCount', { initialValue: 0 },
-          {rules: [{ required: true, message: '并发数!', type: 'integer' }]}
+          'concurrentCount',
+          {rules: [{message: '并发数!必须是整数', required: true, validator: validInteger}]}
         ]"
             placeholder="并发数"
           ></a-input>
@@ -71,7 +71,7 @@
           <a-input
             v-decorator="[
           'productDuration',
-          {rules: [{message: '套餐时长!', type: 'number' }]}
+          {rules: [{message: '套餐时长!必须是整数', required: true, validator: validInteger}]}
         ]"
             placeholder="套餐时长"
           ></a-input>
@@ -85,7 +85,7 @@
           <a-input
             v-decorator="[
           'serviceMonth',
-          {rules: [{message: '套餐包月数!', type: 'integer' }]}
+          {rules: [{message: '套餐包月数!必须是整数', required: true, validator: validInteger}]}
         ]"
             placeholder="套餐包月数"
           ></a-input>
@@ -99,12 +99,12 @@
           <a-input
             v-decorator="[
           'productFlow',
-          {rules: [{message: '套餐流量!', type: 'number' }]}
+          {rules: [{message: '套餐流量!必须是整数', required: true, validator: validFloat}]}
         ]"
             placeholder="套餐流量"
           ></a-input>
         </a-form-item>
-        <a-form-item :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item v-if="this.isFlowType" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <span slot="label">
             流量清理周期
             <a-tooltip title="默认表示无限时长:2099年,固定表示在用户开户时选择的到期时间，开户时不选到期时间则默认">
@@ -113,8 +113,8 @@
           </span>
           <a-select
             v-decorator="[
-          'flowClearCycle',
-          {rules: [{ required: true, message: '流量清零周期' }]}
+          'flowClearCycle', {initialValue:1},
+          {rules: [{ required: this.isFlowType, message: '流量清零周期' }]}
         ]"
             placeholder="流量清零周期"
           >
@@ -128,27 +128,27 @@
           <a-input
             v-decorator="[
           'price',
-          {rules: [{message: '价格(单位:元)', type: 'number' }]}
+          {rules: [{message: '价格(单位:元)至多两位小数', required: true, validator: validYuan}]}
         ]"
             placeholder="价格(单位:元)"
           ></a-input>
         </a-form-item>
-        <a-form-item label="上行限速" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item label="上行限速(Mbps)" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
           'upStreamLimit',
-          {rules: [{message: '上行限速', type: 'number' }]}
+          {rules: [{message: '上行限速(Mbps),必须是数字', required: true, validator: validFloat}]}
         ]"
-            placeholder="上行限速"
+            placeholder="上行限速(Mbps)"
           ></a-input>
         </a-form-item>
-        <a-form-item label="下行限速" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-form-item label="下行限速(Mbps)" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-input
             v-decorator="[
           'downStreamLimit',
-          {rules: [{message: '下行限速', type: 'number' }]}
+          {rules: [{message: '下行限速(Mbps)必须是数字', required: true, validator: validFloat}]}
         ]"
-            placeholder="下行限速"
+            placeholder="下行限速(Mbps)"
           ></a-input>
         </a-form-item>
         <a-form-item label="用户域" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -174,6 +174,9 @@
 </template>
 
 <script>
+const numberReg = /^\d+$/;
+const floatReg = /^\d+\.?\d*$/;
+const yuanReg = /^\d+\.?\d{0,2}$/;
 export default {
   data() {
     return {
@@ -185,6 +188,27 @@ export default {
     };
   },
   methods: {
+    validInteger(_, value, callback) {
+      if(!numberReg.test(value)) {
+        callback("必须是整数");
+        return;
+      }
+       callback();
+    },
+    validFloat(_, value, callback) {
+      if(!floatReg.test(value)) {
+        callback("必须是数字");
+        return;
+      }
+       callback();
+    },
+    validYuan(_, value, callback) {
+      if(!yuanReg.test(value)) {
+        callback("至多两位小数");
+        return;
+      }
+       callback();
+    },
     productChanged(value) {
         if(value == 1) {
           this.isMonthType = true;
@@ -203,6 +227,13 @@ export default {
     handleSubmit(e) {
       e.preventDefault();
       this.form.validateFields((err, values) => {
+        values.concurrentCount = parseInt(values.concurrentCount);
+        values.productDuration = parseInt(values.productDuration) * 60;
+        values.serviceMonth = parseInt(values.serviceMonth);
+        values.productFlow = parseInt(values.productFlow) * 1024;
+        values.price = parseInt(values.price) * 100;
+        values.upStreamLimit = parseInt(values.upStreamLimit);
+        values.downStreamLimit = parseInt(values.downStreamLimit);
         if (!err) {
           this.axios
             .post(this.CONFIG.apiUrl + "/product/add", values)
@@ -211,7 +242,7 @@ export default {
               if (response.data.code == 1) {
                 return;
               }
-              this.$router.push("/product/list");
+              this.$router.push("/product");
             })
             .catch(error => {
               console.log(error);

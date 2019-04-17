@@ -60,7 +60,7 @@
       <div style="margin-bottom: 10px">
         <div style="height:39px">
           <div>
-            <a-button type="primary" @click="addUser">
+            <a-button v-if="$store.getters.getButtonIds.indexOf(110) != -1" type="primary" @click="addUser">
               <a-icon type="plus"/>添加用户信息
             </a-button>
           </div>
@@ -176,19 +176,19 @@
         </template>
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a href="javascript:;" @click="userContinue(record.radUser)">
+            <a v-if="$store.getters.getButtonIds.indexOf(150) != -1" href="javascript:;" @click="userContinue(record.radUser)">
               <a-icon type="select" /> 续订
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a href="javascript:;" @click="modifyUser(record.radUser.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(120) != -1" href="javascript:;" @click="modifyUser(record.radUser.id)">
               <a-icon type="edit"/> 修改
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a style="color:#da6868" @click="deleteUser(record.radUser.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(130) != -1" style="color:#da6868" @click="deleteUser(record.radUser.id)">
               <a-icon type="delete"/> 删除
             </a>
           </span>
