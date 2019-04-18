@@ -61,8 +61,14 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
-            <a v-if="$store.getters.getButtonIds.indexOf(423) != -1" style="color:#da6868" @click="offlineUser(record.onlineUser.id)">
+            <a v-if="$store.getters.getButtonIds.indexOf(310) != -1" style="color:#da6868" @click="offlineUser(record.onlineUser.id)">
               下线 <a-icon type="login" /> 
+            </a>
+          </span>
+          <a-divider type="vertical"/>
+          <span>
+            <a v-if="$store.getters.getButtonIds.indexOf(320) != -1" style="color:#da6868" @click="deleteOnline(record.onlineUser.id)">
+              <a-icon type="delete"/>清理
             </a>
           </span>
         </span>
@@ -150,6 +156,21 @@ export default {
       if (confirm("确定下线用户吗?")) {
         this.axios
           .post(this.CONFIG.apiUrl + "/online/off", { id: id })
+          .then(response => {
+            alert(response.data.message);
+            this.listOnlineUsers({
+              page: pageInit
+            });
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
+    },
+    deleteOnline(id) {
+      if (confirm("确定清理此在线用户吗?")) {
+        this.axios
+          .post(this.CONFIG.apiUrl + "/online/delete", { id: id })
           .then(response => {
             alert(response.data.message);
             this.listOnlineUsers({
