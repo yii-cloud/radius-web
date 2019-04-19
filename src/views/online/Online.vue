@@ -82,7 +82,6 @@
   </a-layout-content>
 </template>
 <script>
-import lodash from "lodash";
 const pageInit = { page: 1, pageSize: 10 };
 const columns = [
   { title: "用户姓名", dataIndex: "radUser.realName", key: "realName" },

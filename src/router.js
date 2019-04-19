@@ -125,6 +125,15 @@ export default new Router({
             parent: "system"
           },
           component: () => import("./views/system/department/Department.vue")
+        },
+        {
+          path: "/change/password",
+          name: "changePassword",
+          meta: {
+            requireAuth: true,
+            parent: "system"
+          },
+          component: () => import("./views/system/manager/ChangePassword.vue")
         }
       ]
     }

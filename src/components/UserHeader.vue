@@ -12,6 +12,12 @@
             <a-icon type="unlock"/>
           </a>
         </a-menu-item>
+        <a-menu-item>
+          <a @click="changePassword()">
+            修改密码
+            <a-icon type="key" />
+          </a>
+        </a-menu-item>
       </a-menu>
     </a-dropdown>
   </div>
@@ -29,10 +35,8 @@ export default {
   },
   methods: {
     getUser() {
-      var sessionId = localStorage.getItem("rad_access_token");
-      this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {
-
-      }).then(response => {
+      this.axios.post(this.CONFIG.apiUrl + "/session/manager/info", {}
+      ).then(response => {
             this.realName = response.data.data.manager.realName;
             this.$store.commit("setButtionIds", response.data.data.buttons);
         }).catch(() => {
@@ -41,11 +45,13 @@ export default {
     },
     logout() {
       if (confirm("确定退出系统吗?!")) {
-        var sessionId = localStorage.getItem("rad_access_token");
         this.axios.post(this.CONFIG.apiUrl + "/logout", {});
         localStorage.removeItem("rad_access_token")
         this.$router.push("/");
       }
+    },
+    changePassword() {
+      this.$router.push("/change/password");
     }
   }
 };
