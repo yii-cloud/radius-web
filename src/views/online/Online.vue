@@ -61,14 +61,19 @@
       >
         <span slot="action" slot-scope="record" class="table-operation">
           <span>
+            <span>
+              <a-tooltip title="下线功能：系统发送下线请求至NAS，NAS处理用户下线后会向服务器发送停止计费请求,此时用户下线.">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
             <a v-if="$store.getters.getButtonIds.indexOf(310) != -1" style="color:#da6868" @click="offlineUser(record.onlineUser.id)">
               下线 <a-icon type="login" /> 
             </a>
           </span>
           <a-divider type="vertical"/>
           <span>
-            <a v-if="$store.getters.getButtonIds.indexOf(320) != -1" style="color:#da6868" @click="deleteOnline(record.onlineUser.id)">
-              <a-icon type="delete"/>清理
+            <a v-if="$store.getters.getButtonIds.indexOf(320) != -1" style="color:#9a633b" @click="deleteOnline(record.onlineUser.id)">
+              清理<a-icon type="delete"/>
             </a>
           </span>
         </span>
@@ -94,7 +99,7 @@ const columns = [
     title: "操作",
     key: "operator",
     fixed: "right",
-    width: 150,
+    width: 180,
     scopedSlots: { customRender: "action" }
   }
 ];
@@ -168,7 +173,7 @@ export default {
       }
     },
     deleteOnline(id) {
-      if (confirm("确定清理此在线用户吗?")) {
+      if (confirm("注意: 清理功能只是清理系统中在线用户的记录\n用户并不会下线,如果需要下线用户请使用下线功能!!!\n确定清理此在线用户吗?")) {
         this.axios
           .post(this.CONFIG.apiUrl + "/online/delete", { id: id })
           .then(response => {
