@@ -120,17 +120,29 @@
                 :label-col="{ span: 5 }"
                 :wrapper-col="{ span: 12 }"
               >
-                <a-select
+                <a-select @change="productSelected"
                   v-decorator="[
                     'productId',
                     {rules: [{ required: true, message: '请选择续订产品!' }]}
                   ]"
                   placeholder="请选择续订产品"
                 >
-                  <a-select-option v-for="p in products" :value="p.id" :key="p.id">
+                  <a-select-option v-for="p in products" :value="p.id" :key="p.id" :type="p.type">
                     {{p.name}}
                   </a-select-option>
                 </a-select>
+              </a-form-item>
+              <a-form-item :hidden="productType != 1"
+                label="倍数"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 12 }"
+              >
+                <a-input
+                  v-decorator="[
+                    'count', 
+                    {initialValue:1, rules: [{ validator:validateCount}]}
+                  ]"
+                />
               </a-form-item>
               <a-form-item
                 :wrapper-col="{ span: 12, offset: 5 }"
@@ -276,9 +288,21 @@ export default {
       userInfo:{},
       userId: 0,
       continueUser: null,
+      productType: 0,
     };
   },
   methods: {
+    validateCount(_, value, callback) {
+      if(isNaN(value) || value <= 0 ) {
+          callback("必须是数字并且大于0");
+          this.expire = null;
+          return;
+      } 
+      callback();
+    },
+    productSelected(value, option) {
+      this.productType = option.data.attrs.type;
+    },
     fetchProducts() {
       this.axios
         .post(this.CONFIG.apiUrl + "/fetch/product", {})
@@ -289,10 +313,12 @@ export default {
     handleContinue(e) {
        e.preventDefault();
        this.continueForm.validateFields((err, values) => {
-         console.log(values);
+         values.id = parseInt(values.id);
+         values.beContinue = true;
          this.axios.post(this.CONFIG.apiUrl + "/user/continue", values).then(response => {
              alert(response.data.message);
-             this.$router.push("/user");
+             this.continueVisible = false;
+             this.fetchUser({page: pageInit});
              return;
          }).catch((error) => {
             console.log(error);
@@ -300,11 +326,13 @@ export default {
        });
     },
     userContinue(user) {
+      this.productType = 0;
       this.continueForm.resetFields();
       this.continueVisible = true;
       this.continueUser = user;
       this.fetchProducts();
       delete user.productId;
+      delete user.count;
       this.$nextTick(() => {
           this.continueForm.setFieldsValue(lodash.pick(user, Object.keys(this.continueForm.getFieldsValue())));
       });
