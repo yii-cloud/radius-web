@@ -249,9 +249,9 @@ const columns = [
     scopedSlots: { customRender: "statusName" }
   },
   { title: "手机号码", dataIndex: "radUser.mobile", key: "mobile" },
-  { title: "套餐剩余时长", dataIndex: "radUser.availableTime", key: "availableTime" },
-  { title: "套餐剩余流量", dataIndex: "radUser.availableFlow", key: "availableFlow" },
-  { title: "套餐过期时间", dataIndex: "radUser.expireTime", key: "expireTime" },
+  { title: "套餐剩余时长(分)", dataIndex: "radUser.availableTime", key: "availableTime",customRender: text => text / 60  },
+  { title: "套餐剩余流量(M)", dataIndex: "radUser.availableFlow", key: "availableFlow", customRender: text => text / 1024.0 },
+  { title: "套餐过期时间", dataIndex: "radUser.expireTime", key: "expireTime", customRender: text => text.substring(0,10) },
   { title: "电子邮件", dataIndex: "radUser.email", key: "email" },
   {
     title: "操作",
@@ -314,6 +314,7 @@ export default {
        e.preventDefault();
        this.continueForm.validateFields((err, values) => {
          values.id = parseInt(values.id);
+         values.count = parseInt(values.count);
          values.beContinue = true;
          this.axios.post(this.CONFIG.apiUrl + "/user/continue", values).then(response => {
              alert(response.data.message);
